@@ -15,15 +15,20 @@ class Graphics(tkinter.Tk):
     """The highlight background colour for the buttons used for the board."""
 
     def __init__(self, logic: Logic):
-        """Initializes the game's graphics."""
-        super().__init__()
-        self.title("Connect Four")  # The window's title
+        """
+        Initializes the game's graphics.
+
+        Args:
+            logic: The logic for the game.
+        """
+        super().__init__()  # Inherit from tkinter
 
         self._squares: dict[tkinter.Button] = {}
         """The squares in the board, made up of tkinter buttons."""
         self._logic: Logic = logic
         """The game's logic."""
 
+        self.title("Connect Four")  # The window's title
         self._create_label()
         self._create_board()
 
@@ -35,7 +40,7 @@ class Graphics(tkinter.Tk):
         # The label
         self.display = tkinter.Label(
             master=display_frame,
-            text="<Blue>, make the first move!",  # TODO: Add dynamic message when players are added
+            text=f"Player {self._logic.current_player.id} ({self._logic.current_player.colour}), make the first move!",
             font=font.Font(family="Arial", size=20, weight="bold"),
         )
 

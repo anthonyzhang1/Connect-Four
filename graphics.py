@@ -9,14 +9,13 @@ import tkinter
 class Graphics(tkinter.Tk):
     """The game's graphics, including its window, label, and board."""
 
-    BUTTON_FOREGROUND_COLOUR = "black"
+    _BUTTON_FOREGROUND_COLOUR = "black"
     """The foreground colour for the buttons used for the board."""
-    BUTTON_HIGHLIGHT_BACKGROUND_COLOUR = "lightblue"
+    _BUTTON_HIGHLIGHT_BACKGROUND_COLOUR = "lightblue"
     """The highlight background colour for the buttons used for the board."""
 
     def __init__(self, logic: Logic):
-        """
-        Initializes the game's graphics.
+        """Initializes the game's graphics.
 
         Args:
             logic: The logic for the game.
@@ -57,8 +56,8 @@ class Graphics(tkinter.Tk):
                 master=board_frame,
                 text="",
                 font=font.Font(size=30),  # Determines the size of the squares
-                fg=self.BUTTON_FOREGROUND_COLOUR,
-                highlightbackground=self.BUTTON_HIGHLIGHT_BACKGROUND_COLOUR,
+                fg=self._BUTTON_FOREGROUND_COLOUR,
+                highlightbackground=self._BUTTON_HIGHLIGHT_BACKGROUND_COLOUR,
                 width=4,
                 height=2,
             )

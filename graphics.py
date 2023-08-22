@@ -1,4 +1,4 @@
-"""Handles the game's graphics."""
+"""Handles the game's graphics using tkinter."""
 
 from logic import BOARD_ROWS, BOARD_COLUMNS, Logic
 from tkinter import font
@@ -14,7 +14,7 @@ class Graphics(tkinter.Tk):
     _BUTTON_HIGHLIGHT_BACKGROUND_COLOUR = "lightblue"
     """The highlight background colour for the buttons used for the board."""
 
-    def __init__(self, logic: Logic):
+    def __init__(self, logic: Logic) -> None:
         """Initializes the game's graphics.
 
         Args:
@@ -31,7 +31,7 @@ class Graphics(tkinter.Tk):
         self._create_label()
         self._create_board()
 
-    def _create_label(self):
+    def _create_label(self) -> None:
         """Creates the label shown above the board."""
         display_frame = tkinter.Frame(master=self)
         display_frame.pack(fill=tkinter.X)
@@ -45,7 +45,7 @@ class Graphics(tkinter.Tk):
 
         self.display.pack()
 
-    def _create_board(self):
+    def _create_board(self) -> None:
         """Creates the board using a grid of buttons."""
         board_frame = tkinter.Frame(master=self)
         board_frame.pack()
@@ -73,7 +73,7 @@ class Graphics(tkinter.Tk):
             )
 
 
-def main():
+def main() -> None:
     """Launches the game."""
     Graphics(Logic()).mainloop()
 

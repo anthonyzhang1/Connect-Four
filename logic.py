@@ -11,7 +11,7 @@ COMBINATION_LENGTH = 4
 
 
 class Player:
-    """Represents a player and their id and colour.
+    """Represents a player and their ID and colour.
 
     Attributes:
         id: (int) The player's ID, from 1 to 9.
@@ -20,7 +20,7 @@ class Player:
           Used to determine if the player has four in a row.
     """
 
-    def __init__(self, id: int, colour: str):
+    def __init__(self, id: int, colour: str) -> None:
         """Initializes the player and their attributes.
 
         Args:
@@ -49,16 +49,16 @@ class Square:
     """
 
     NO_ID: int = 0
-    """Used to indicate that the square has no piece in it."""
+    """Used in `player_id` to indicate that the square has no piece in it."""
 
-    def __init__(self, row: int, column: int, player_id: int = NO_ID):
+    def __init__(self, row: int, column: int, player_id: int = NO_ID) -> None:
         """Initializes the square and its attributes.
 
         Args:
             row: The row this square is on.
             column: The column this square is on.
             player_id: The ID of the player who is placing their piece in this square.
-              Leave blank to indicate an empty square.
+              Leave empty to indicate an empty square.
         """
         self.row: int = row
         """The row of the square in the board."""
@@ -66,6 +66,22 @@ class Square:
         """The column of the square in the board."""
         self.player_id: int = player_id
         """The ID of the player who placed a piece in the square. The value `NO_ID` means there is no piece in the square."""
+
+    def __eq__(self, other) -> bool:
+        """Defines how the `==` operator behaves for `Square`.
+        `Square` objects are equivalent if they have the same `row`, `column`, and `player_id`.
+
+        Args:
+            other: The other object to compare to.
+
+        Returns:
+            `True` if `other` is a `Square` and has the same `row`, `column`, and `player_id` as `self`.
+            `False` otherwise.
+        """
+        if not isinstance(other, Square):  # `other` must be a `Square` to be equivalent
+            return False
+
+        return (self.row, self.column, self.player_id) == (other.row, other.column, other.player_id)
 
 
 PLAYERS = (
@@ -83,7 +99,7 @@ class Logic:
         current_player: (Player) The player whose turn it is. If the game is won, then this is also the winner.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initializes the game's logic."""
         self._players = cycle(PLAYERS)
         """The players in the game, in a cycle."""
@@ -98,7 +114,7 @@ class Logic:
 
         self._initialize_board()
 
-    def _initialize_board(self):
+    def _initialize_board(self) -> None:
         """Initialize all of the squares in the board, in the form [row][column]."""
         self._current_squares = [[Square(row, column) for column in range(BOARD_COLUMNS)] for row in range(BOARD_ROWS)]
 
@@ -121,21 +137,18 @@ class Logic:
         # If there are no empty squares, return `None`.
         return next((square for square in column_squares if square.player_id == square.NO_ID), None)
 
-    def is_valid_move(self, selected_square: Square) -> bool:
+    def is_valid_move(self, selected_column: int) -> bool:
         """Checks if a move is valid.
-        A move is valid if the column the selected square is in has empty squares, and the game is not over.
-
-        The piece will not necessarily be placed where `selected_square` is -- it will be placed on
-        the first empty square of its column. Hence, `selected_square` can be valid even if there is already a piece in it.
+        A move is valid if the selected column has an empty square, and the game is not over.
 
         Args:
-            selected_square: The square selected for the move. The square is not necessarily where the piece will be placed.
+            selected_column: The column selected for the move.
 
         Returns:
             `True` if the move is valid, `False` otherwise.
         """
-        # Checks if there is an empty square in the selected square's column
-        column_has_empty_square: bool = self.get_first_empty_square_in_column(selected_square.column) is not None
+        # Checks if there is an empty square in the selected column
+        column_has_empty_square: bool = self.get_first_empty_square_in_column(selected_column) is not None
         game_is_not_over: bool = not self._has_winner  # The game is not over if there is no winner
 
         return column_has_empty_square and game_is_not_over
@@ -164,8 +177,10 @@ class Logic:
         else:  # No four-in-a-row found
             return None
 
-    def handle_move(self, selected_square: Square):
-        """Places the player's piece in the first empty square in the column, and checks if there is a win, i.e. a four-in-a-row.
+    def handle_move(self, selected_column: int) -> None:
+        """Places the current player's piece in the first empty square in the selected column,
+        and checks if there is a win, i.e. a four-in-a-row.
+
         The move should be valid, and should be checked beforehand.
 
         If there is a win, the winner and the winning coordinates are saved.
@@ -173,19 +188,18 @@ class Logic:
         and four-in-a-rows after the first are not counted.
 
         Args:
-            selected_square: The square selected for the move. The square is not necessarily where the piece will be placed.
+            selected_column: The column selected for the move.
         """
-        actual_square: Square = self.get_first_empty_square_in_column(selected_square.column)
-        """The square which contains the newly placed piece, i.e. the first empty square in the column."""
+        first_empty_square: Square = self.get_first_empty_square_in_column(selected_column)
+        """The first empty square in the column. Only its coordinates (`row` and `column`) should be used."""
 
-        # Places the player's piece into the empty square, then update `_current_squares` with the new square.
-        actual_square.player_id = self.current_player.id
-        self._current_squares[actual_square.row][actual_square.column] = actual_square
+        # Places the current player's piece where the first empty square is
+        self._current_squares[first_empty_square.row][first_empty_square.column].player_id = self.current_player.id
 
         # Checks for a win in the row, column, and both diagonals where the piece was placed.
         # Only the coordinates for the first win found are saved.
         # TODO: Write tests for this.
-        winning_coordinates: list[tuple[int, int]] | None = self._check_for_win_in_row(actual_square.row)
+        winning_coordinates: list[tuple[int, int]] | None = self._check_for_win_in_row(first_empty_square.row)
 
         if winning_coordinates is None:
             # TODO: Check column win and assign to winning_coordinates
@@ -202,3 +216,7 @@ class Logic:
         if winning_coordinates is not None:  # If four-in-a-row was found
             self._has_winner = True
             self.winning_coordinates = winning_coordinates
+
+    def switch_to_next_player(self) -> None:
+        """Switches the current player to the next player."""
+        self.current_player = next(self._players)

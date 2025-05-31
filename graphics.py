@@ -72,6 +72,8 @@ class Graphics(tkinter.Tk):
                 pady=1,  # Padding between rows
             )
 
+    # TODO: Update the game's graphics after finishing the game logic.
+
 
 def main() -> None:
     """Launches the game."""

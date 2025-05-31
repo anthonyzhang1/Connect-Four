@@ -155,14 +155,14 @@ class Logic:
         return column_has_empty_square and game_is_ongoing
 
     def _check_for_win_in_row(self, row: int) -> list[tuple[int, int]] | None:
-        """Checks if there is four-in-a-row in the given row, and if there is, return the coordinates of the winning squares.
+        """Checks if there is four-in-a-row in the given row.
 
         Args:
             row: The index of the row to check.
 
         Returns:
             If there is a win, returns a list of the winning coordinates, e.g. [(0, 2), (0, 3), (0, 4), (0, 5)].
-            Only four coordinates are returned in case of a five-in-a-row or greater.
+              Only four coordinates are returned in case of a five-in-a-row or greater.
             If there is no win, returns `None`.
         """
         row_squares: list[Square] = self._current_squares[row]
@@ -179,14 +179,14 @@ class Logic:
             return None
 
     def _check_for_win_in_column(self, column: int) -> list[tuple[int, int]] | None:
-        """Checks if there is four-in-a-row in the given column, and if there is, return the coordinates of the winning squares.
+        """Checks if there is four-in-a-row in the given column.
 
         Args:
             column: The index of the column to check.
 
         Returns:
             If there is a win, returns a list of the winning coordinates, e.g. [(0, 2), (1, 2), (2, 2), (3, 2)].
-            Only four coordinates are returned in case of a five-in-a-row or greater.
+              Only four coordinates are returned in case of a five-in-a-row or greater.
             If there is no win, returns `None`.
         """
         column_squares: list[Square] = [row[column] for row in self._current_squares]
@@ -202,10 +202,60 @@ class Logic:
         else:  # No four-in-a-row found
             return None
 
+    def _get_ascending_diagonal_start_coordinates(self, row: int, column: int) -> tuple[int, int]:
+        """Gets the starting coordinates of the ascending diagonal that intersects (row, column).
+
+        Args:
+            row: The index of the checked square's row.
+            column: The index of the checked square's column.
+
+        Returns:
+            Returns the row and column of the bottom-leftmost square on the intersecting ascending diagonal, e.g. (1, 0).
+        """
+        while row and column > 0:  # Gets the bottom-leftmost coordinate on the ascending diagonal
+            row -= 1
+            column -= 1
+
+        return (row, column)
+
+    def _check_for_win_in_ascending_diagonal(self, row: int, column: int) -> list[tuple[int, int]] | None:
+        """Checks if there is a win in the given square's ascending diagonal.
+
+        Args:
+            row: The index of the checked square's row.
+            column: The index of the checked square's column.
+
+        Returns:
+            If there is a win, returns a list of the winning coordinates, e.g. [(0, 1), (1, 2), (2, 3), (3, 4)].
+              Only four coordinates are returned in case of a five-in-a-row or greater.
+            If there is no win, returns `None`.
+        """
+        diagonal_start_coordinates: tuple[int, int] = self._get_ascending_diagonal_start_coordinates(row, column)
+        """The coordinates of the bottom-leftmost square on the diagonal."""
+        diagonal_length: int = min(BOARD_ROWS - diagonal_start_coordinates[0], BOARD_COLUMNS - diagonal_start_coordinates[1])
+        """The length of the ascending diagonal. It decreases as the diagonal starts closer to the top or right edges of the board."""
+        diagonal_squares: list[Square] = []
+        """A list of all the squares in the ascending diagonal."""
+
+        for i in range(diagonal_length):  # Appends all the squares on the diagonal to `diagonal_squares`
+            diagonal_squares.append(self._current_squares[diagonal_start_coordinates[0] + i][diagonal_start_coordinates[1] + i])
+
+        diagonal_as_string: str = "".join(str(square.player_id) for square in diagonal_squares)
+        """The diagonal represented as a string, where each character represents the piece in the square, e.g. "222200"."""
+        combination_start_offset: int = diagonal_as_string.find(self.current_player.winning_combination)
+        """Stores the index (i.e. offset) of the start of the winning combination in `diagonal_as_string`, or -1 if there is no win."""
+
+        if combination_start_offset >= 0:  # Four-in-a-row found: returns the coordinates of the winning squares
+            # The winning combination's starting row and column is found with the starting coordinates + the offset
+            return [(diagonal_start_coordinates[0] + combination_start_offset + i,
+                     diagonal_start_coordinates[1] + combination_start_offset + i) for i in range(COMBINATION_LENGTH)]
+        else:  # No four-in-a-row found
+            return None
+
     def handle_move(self, selected_column: int) -> None:
         """Places the current player's piece in the first empty square in the selected column,
         and checks if there is a win, i.e. a four-in-a-row. If there is no win, it becomes the next player's turn.
-        The move should be valid, and should be checked beforehand.
+        The move should be valid and checked beforehand.
 
         If there is a win, the winner and the winning coordinates are saved.
         Only four coordinates of the first four-in-a-row found are saved, so not all of a five-in-a-row or greater is counted,
@@ -215,20 +265,20 @@ class Logic:
             selected_column: The column selected for the move.
         """
         first_empty_square: Square = self.get_first_empty_square_in_column(selected_column)
-        """The first empty square in the column. Only its coordinates (`row` and `column`) should be used."""
+        """The first empty square in the column. Only its coordinates `row` and `column` should be used."""
 
         # Places the current player's piece where the first empty square is
         self._current_squares[first_empty_square.row][first_empty_square.column].player_id = self.current_player.id
 
-        # Checks for a win on the placed piece's row
+        # Checks for a win in the placed piece's row
         winning_coordinates: list[tuple[int, int]] | None = self._check_for_win_in_row(first_empty_square.row)
 
-        # Check for a win in the placed piece's column
+        # Checks for a win in the placed piece's column
         if winning_coordinates is None: winning_coordinates = self._check_for_win_in_column(first_empty_square.column)
             
+        # Checks for a win in the placed piece's ascending diagonal
         if winning_coordinates is None:
-            # TODO: Check ascending diagonal win and assign to winning_coordinates, then write test
-            pass
+            winning_coordinates = self._check_for_win_in_ascending_diagonal(first_empty_square.row, first_empty_square.column)
 
         if winning_coordinates is None:
             # TODO: Check descending diagonal win and assign to winning_coordinates, then write test

@@ -32,7 +32,7 @@ def test_get_first_empty_square_in_column(logic: Logic) -> None:
 
 
 def test_check_for_win_in_row(logic: Logic) -> None:
-    """Tests `Logic._check_for_win_in_row` by simulating a win via four-in-a-row in a row."""
+    """Tests `Logic._check_for_win_in_row()` by simulating a win via four-in-a-row in a row."""
 
     # Simulates a Player 1 win by making a row with [2211112].
     logic.handle_move(3)  # Player 1's move: [0001000]
@@ -48,7 +48,7 @@ def test_check_for_win_in_row(logic: Logic) -> None:
 
 
 def test_check_for_win_in_column(logic: Logic) -> None:
-    """Tests `Logic._check_for_win_in_column` by simulating a win via four-in-a-row in a column."""
+    """Tests `Logic._check_for_win_in_column()` by simulating a win via four-in-a-row in a column."""
 
     # Simulates a Player 1 win by making a column with [1111000].
     logic.handle_move(2)  # Player 1's move: [1000000]
@@ -61,3 +61,25 @@ def test_check_for_win_in_column(logic: Logic) -> None:
 
     # Checks that the game is won.
     assert logic._has_winner == True, "The game did not have a column winner."
+
+def test_check_for_win_in_ascending_diagonal(logic: Logic) -> None:
+    """Tests `Logic._check_for_win_in_ascending_diagonal()` by simulating a win via four-in-a-row in an ascending diagonal."""
+
+    # Simulates a Player 2 win by making a board with:
+    # [0,0,0,0,2,0,0]
+    # [0,0,0,2,1,0,0]
+    # [0,0,2,1,2,0,0]
+    # [0,2,1,1,1,0,0]
+    logic.handle_move(2)  # Player 1's move on Row 0: [0,0,1,0,0,0,0]
+    logic.handle_move(1)  # Player 2's move on Row 0: [0,2,1,0,0,0,0]
+    logic.handle_move(3)  # Player 1's move on Row 0: [0,2,1,1,0,0,0]
+    logic.handle_move(2)  # Player 2's move on Row 1: [0,0,2,0,0,0,0]
+    logic.handle_move(4)  # Player 1's move on Row 0: [0,2,1,1,1,0,0]
+    logic.handle_move(4)  # Player 2's move on Row 1: [0,0,2,0,2,0,0]
+    logic.handle_move(3)  # Player 1's move on Row 1: [0,0,2,1,2,0,0]
+    logic.handle_move(3)  # Player 2's move on Row 2: [0,0,0,2,0,0,0]
+    logic.handle_move(4)  # Player 1's move on Row 2: [0,0,0,2,1,0,0]
+    logic.handle_move(4)  # Player 2's move on Row 3: [0,0,0,0,2,0,0]
+
+    # Checks that the game is won.
+    assert logic._has_winner == True, "The game did not have an ascending diagonal winner."

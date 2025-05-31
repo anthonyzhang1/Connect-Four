@@ -83,3 +83,26 @@ def test_check_for_win_in_ascending_diagonal(logic: Logic) -> None:
 
     # Checks that the game is won.
     assert logic._has_winner == True, "The game did not have an ascending diagonal winner."
+
+
+def test_check_for_win_in_descending_diagonal(logic: Logic) -> None:
+    """Tests `Logic._check_for_win_in_descending_diagonal()` by simulating a win via four-in-a-row in a descending diagonal."""
+
+    # Simulates a Player 2 win by making a board with:
+    # [0,0,2,0,0,0,0]
+    # [0,0,1,2,0,0,0]
+    # [0,0,2,1,2,0,0]
+    # [0,0,1,1,1,2,0]
+    logic.handle_move(2)  # Player 1's move on Row 0: [0,0,1,0,0,0,0]
+    logic.handle_move(5)  # Player 2's move on Row 0: [0,0,1,0,0,2,0]
+    logic.handle_move(4)  # Player 1's move on Row 0: [0,0,1,0,1,2,0]
+    logic.handle_move(4)  # Player 2's move on Row 1: [0,0,0,0,2,0,0]
+    logic.handle_move(3)  # Player 1's move on Row 0: [0,0,1,1,1,2,0]
+    logic.handle_move(2)  # Player 2's move on Row 1: [0,0,2,0,2,0,0]
+    logic.handle_move(3)  # Player 1's move on Row 1: [0,0,2,1,2,0,0]
+    logic.handle_move(3)  # Player 2's move on Row 2: [0,0,0,2,0,0,0]
+    logic.handle_move(2)  # Player 1's move on Row 2: [0,0,1,2,0,0,0]
+    logic.handle_move(2)  # Player 2's move on Row 3: [0,0,2,0,0,0,0]
+
+    # Checks that the game is won.
+    assert logic._has_winner == True, "The game did not have a descending diagonal winner."

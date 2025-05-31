@@ -251,6 +251,56 @@ class Logic:
                      diagonal_start_coordinates[1] + combination_start_offset + i) for i in range(COMBINATION_LENGTH)]
         else:  # No four-in-a-row found
             return None
+        
+    def _get_descending_diagonal_start_coordinates(self, row: int, column: int) -> tuple[int, int]:
+        """Gets the starting coordinates of the descending diagonal that intersects (row, column).
+
+        Args:
+            row: The index of the checked square's row.
+            column: The index of the checked square's column.
+
+        Returns:
+            Returns the row and column of the top-leftmost square on the intersecting descending diagonal, e.g. (5, 0).
+        """
+        while row < BOARD_ROWS - 1 and column > 0:  # Gets the top-leftmost coordinate on the descending diagonal
+            row += 1
+            column -= 1
+
+        return (row, column)
+        
+    def _check_for_win_in_descending_diagonal(self, row: int, column: int) -> list[tuple[int, int]] | None:
+        """Checks if there is a win in the given square's descending diagonal.
+
+        Args:
+            row: The index of the checked square's row.
+            column: The index of the checked square's column.
+
+        Returns:
+            If there is a win, returns a list of the winning coordinates, e.g. [(3, 2), (2, 3), (1, 4), (0, 5)].
+              Only four coordinates are returned in case of a five-in-a-row or greater.
+            If there is no win, returns `None`.
+        """
+        diagonal_start_coordinates: tuple[int, int] = self._get_descending_diagonal_start_coordinates(row, column)
+        """The coordinates of the top-leftmost square on the diagonal."""
+        diagonal_length: int = min(diagonal_start_coordinates[0] + 1, BOARD_COLUMNS - diagonal_start_coordinates[1])
+        """The length of the descending diagonal. It decreases as the diagonal starts closer to the bottom or right edges of the board."""
+        diagonal_squares: list[Square] = []
+        """A list of all the squares in the descending diagonal."""
+
+        for i in range(diagonal_length):  # Appends all the squares on the diagonal to `diagonal_squares`
+            diagonal_squares.append(self._current_squares[diagonal_start_coordinates[0] - i][diagonal_start_coordinates[1] + i])
+
+        diagonal_as_string: str = "".join(str(square.player_id) for square in diagonal_squares)
+        """The diagonal represented as a string, where each character represents the piece in the square, e.g. "002222"."""
+        combination_start_offset: int = diagonal_as_string.find(self.current_player.winning_combination)
+        """Stores the index (i.e. offset) of the start of the winning combination in `diagonal_as_string`, or -1 if there is no win."""
+
+        if combination_start_offset >= 0:  # Four-in-a-row found: returns the coordinates of the winning squares
+            # The winning combination's starting row and column is found with the starting coordinates +- the offset
+            return [(diagonal_start_coordinates[0] - combination_start_offset - i,
+                     diagonal_start_coordinates[1] + combination_start_offset + i) for i in range(COMBINATION_LENGTH)]
+        else:  # No four-in-a-row found
+            return None
 
     def handle_move(self, selected_column: int) -> None:
         """Places the current player's piece in the first empty square in the selected column,
@@ -280,11 +330,11 @@ class Logic:
         if winning_coordinates is None:
             winning_coordinates = self._check_for_win_in_ascending_diagonal(first_empty_square.row, first_empty_square.column)
 
+        # Checks for a win in the placed piece's descending diagonal
         if winning_coordinates is None:
-            # TODO: Check descending diagonal win and assign to winning_coordinates, then write test
-            pass
+            winning_coordinates = self._check_for_win_in_descending_diagonal(first_empty_square.row, first_empty_square.column)
 
-        if winning_coordinates is None:  # If there is no win
+        if winning_coordinates is None:  # If there is no win, continue the game
             self.switch_to_next_player()
         else:  # If there is a win
             self._has_winner = True

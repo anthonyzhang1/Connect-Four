@@ -19,7 +19,6 @@ class Player:
         winning_combination: (str) The player's ID repeated `COMBINATION_LENGTH` times.
           Used to determine if the player has four in a row.
     """
-
     def __init__(self, id: int, colour: str) -> None:
         """Initializes the player and their attributes.
 
@@ -47,7 +46,6 @@ class Square:
         column: (int) The column of the square in the board.
         player_id: (int) The id of the player who placed a piece in the square.
     """
-
     NO_ID: int = 0
     """Used in `player_id` to indicate that the square has no piece in it."""
 
@@ -98,7 +96,6 @@ class Logic:
         winning_coordinates: (list[tuple[int, int]]) Contains the coordinates of the squares which won the game.
         current_player: (Player) The player whose turn it is. If the game is won, then this is also the winner.
     """
-
     def __init__(self) -> None:
         """Initializes the game's logic."""
         self._players = cycle(PLAYERS)
@@ -117,6 +114,17 @@ class Logic:
     def _initialize_board(self) -> None:
         """Initialize all of the squares in the board, in the form [row][column]."""
         self._current_squares = [[Square(row, column) for column in range(BOARD_COLUMNS)] for row in range(BOARD_ROWS)]
+
+    def reset_game(self) -> None:
+        """Resets the game state so a new game can be played."""
+        self._initialize_board()
+        
+        # If the game is won, let the loser have the first-move advantage next game
+        if self._has_winner: self.switch_to_next_player()
+
+        # Resets variables related to the game's winner
+        self._has_winner = False
+        self.winning_coordinates = []
 
     def switch_to_next_player(self) -> None:
         """Switches the current player to the next player."""

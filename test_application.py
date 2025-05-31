@@ -1,7 +1,5 @@
-"""
-Contains tests for the application using pytest.
-The tests are ran from the command line with the command: pytest
-"""
+"""Contains tests for the application using pytest.
+The tests are ran from the command line with the command: pytest"""
 
 from logic import BOARD_ROWS, Logic, Square
 import pytest
@@ -61,6 +59,7 @@ def test_check_for_win_in_column(logic: Logic) -> None:
 
     # Checks that the game is won.
     assert logic._has_winner == True, "The game did not have a column winner."
+
 
 def test_check_for_win_in_ascending_diagonal(logic: Logic) -> None:
     """Tests `Logic._check_for_win_in_ascending_diagonal()` by simulating a win via four-in-a-row in an ascending diagonal."""

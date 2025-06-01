@@ -11,7 +11,7 @@ class Graphics(tkinter.Tk):
     def __init__(self, logic: Logic) -> None:
         """Initializes the game's graphics.
         
-        Args:
+        Parameters:
             logic: The game's logic.
         """
         super().__init__()  # Inherit from tkinter
@@ -71,11 +71,21 @@ class Graphics(tkinter.Tk):
             button.bind("<ButtonPress-1>", self.play)  # Clicking the button calls play()
             button.grid(row=row, column=column)  # Places the button into the board's grid
 
-    def _get_actual_button(self, clicked_button: tkinter.Button) -> tkinter.Button:
-        """Returns the actual button the piece was placed in, which is not necessarily the clicked one.
-        The piece is placed in the first empty button of a column."""
+    def _get_actual_button(self, clicked_button: tkinter.Button) -> tkinter.Button | None:
+        """Gets the actual button the piece was placed in, which is not necessarily the clicked one.
+        The piece is placed in the first empty button of a column.
+
+        Parameters:
+            clicked_button: The clicked button.
+        
+        Returns:
+            The actual button the piece was placed in if the move was valid, and `None` otherwise.
+        """
         actual_square: Square | None = self._logic.get_first_empty_square_in_column(self._buttons[clicked_button][1])
-        """The piece's actual square."""
+        """The piece's actual square, if the move was valid. `None` otherwise."""
+
+        if actual_square is None: return None  # If the move was invalid
+
         actual_row: int = BOARD_ROWS - actual_square.row - 1
         """The piece's actual row on the grid, translated from the logic's row index."""
 
@@ -112,7 +122,7 @@ class Graphics(tkinter.Tk):
     def play(self, event: tkinter.Event) -> None:
         """Handles a player's move.
         
-        Args:
+        Parameters:
             event: A button press.
         """
         clicked_button: tkinter.Button = event.widget
@@ -120,7 +130,7 @@ class Graphics(tkinter.Tk):
         clicked_column = self._buttons[clicked_button][1]
         """The column of the clicked button."""
 
-        if not self._logic.is_valid_move(clicked_column): return  # Ignore invalid moves
+        if not self._logic.is_valid_move(clicked_column): return  # Discard invalid moves
         
         actual_button: tkinter.Button = self._get_actual_button(clicked_button)
         """The actual button with the placed piece."""

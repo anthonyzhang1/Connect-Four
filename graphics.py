@@ -92,15 +92,15 @@ class Graphics(tkinter.Tk):
     def _highlight_winning_squares(self) -> None:
         """Highlights the buttons containing the winning combination."""
         button: tkinter.Button
-        gui_winning_coordinates: list[tuple[int, int]] = [(BOARD_ROWS - coordinates[0] - 1, coordinates[1])
-                                                          for coordinates in self._logic.winning_coordinates]
-        """The winning coordinates on the grid, translated from the logic's winning coordinates."""
+        winning_coordinates: list[tuple[int, int]] = [(BOARD_ROWS - coordinates[0] - 1, coordinates[1])
+                                                      for coordinates in self._logic.winning_coordinates]
+        """The grid's winning coordinates, translated from the logic's winning coordinates."""
 
-        # Finds the winning combination and highlights each button with the winner's colour
+        # Finds the buttons with the winning coordinates and highlights them with the winner's colour
         for button, coordinates in self._buttons.items():
-            if coordinates in gui_winning_coordinates:
+            if coordinates in winning_coordinates:
                 button.config(
-                    default="active",
+                    default="active",  # Highlights the button
                     highlightcolor=self._logic.current_player.colour,
                     highlightthickness=3
                 )

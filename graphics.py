@@ -1,6 +1,6 @@
 """Handles the game's graphics using tkinter."""
 
-from logic import BOARD_ROWS, BOARD_COLUMNS, Logic
+from logic import BOARD_COLUMNS, BOARD_ROWS, Logic, Square
 from tkinter import font
 import numpy
 import tkinter
@@ -16,8 +16,8 @@ class Graphics(tkinter.Tk):
         """
         super().__init__()  # Inherit from tkinter
 
-        self._squares: dict[tkinter.Button] = {}
-        """The squares in the board, made up of tkinter buttons."""
+        self._buttons: dict[tkinter.Button] = {}
+        """The buttons making up the board."""
         self._logic: Logic = logic
         """The game's logic."""
 
@@ -27,7 +27,7 @@ class Graphics(tkinter.Tk):
         self._create_board()
 
     def _create_menu(self) -> None:
-        """Creates a menu with options to start a new game or exit the game."""
+        """Creates a menu with options to start a new game, exit the game, etc."""
         menu_bar = tkinter.Menu(master=self)
         self.config(menu=menu_bar)  # Sets `menu_bar` as the main menu
 
@@ -39,7 +39,7 @@ class Graphics(tkinter.Tk):
         menu_bar.add_cascade(label="File", menu=file_menu)  # Adds the "File" option to the menu bar
 
     def _create_label(self) -> None:
-        """Creates the label shown above the board."""
+        """Creates the label shown above the board for displaying messages."""
         display_frame = tkinter.Frame(master=self)
         display_frame.pack(fill=tkinter.X)
 
@@ -54,52 +54,50 @@ class Graphics(tkinter.Tk):
         self.display.pack()
 
     def _create_board(self) -> None:
-        """Creates the board using a grid of buttons."""
+        """Creates the board with a grid of buttons."""
         board_frame = tkinter.Frame(master=self)
         board_frame.pack()
 
-        # Creates an empty button for every square in the board
         for row, column in numpy.ndindex(BOARD_ROWS, BOARD_COLUMNS):
+            # Creates empty buttons
             button = tkinter.Button(
                 master=board_frame,
                 text="",
-                font=font.Font(size=60),  # Determines the size of the squares
-                width=3
+                font=font.Font(size=60),  # Affects the size of the button
+                width=3  # Affects the button's proportions
             )
 
-            self._squares[button] = (row, column)  # The buttons are now the squares in the board
-            button.bind("<ButtonPress-1>", self.play)  # Binds the click event of every button with play()
-
-            # Creates the board using a grid of buttons
-            button.grid(row=row, column=column)
+            self._buttons[button] = (row, column)  # Assigns the button's coordinates
+            button.bind("<ButtonPress-1>", self.play)  # Clicking the button calls play()
+            button.grid(row=row, column=column)  # Places the button into the board's grid
 
     def _get_actual_button(self, clicked_button: tkinter.Button) -> tkinter.Button:
-        """Returns the button that will actually show the piece, which is not necessarily the clicked button.
-        The button that shows the piece is the one with the first empty square.
-        """
-        actual_square = self._logic.get_first_empty_square_in_column(self._squares[clicked_button][1])
-        """The actual square that will hold the piece."""
-        grid_row = BOARD_ROWS - actual_square.row - 1
-        """Holds the GUI's row index translated from the logic's row index."""
+        """Returns the actual button the piece was placed in, which is not necessarily the clicked one.
+        The piece is placed in the first empty button of a column."""
+        actual_square: Square | None = self._logic.get_first_empty_square_in_column(self._buttons[clicked_button][1])
+        """The piece's actual square."""
+        actual_row: int = BOARD_ROWS - actual_square.row - 1
+        """The piece's actual row on the grid, translated from the logic's row index."""
 
-        # Returns the button with the matching coordinates
-        return [button for button, coordinates in self._squares.items() if coordinates == (grid_row, actual_square.column)][0]
+        # Returns the actual button matching the piece's coordinates
+        return [button for button, coordinates in self._buttons.items() if coordinates == (actual_row, actual_square.column)][0]
 
     def _display_piece(self, button: tkinter.Button) -> None:
-        """Displays the current player's piece on the provided button."""
+        """Displays the current player's piece on a button."""
         button.config(
-            text="⬤",  # The piece to display
-            fg=self._logic.current_player.colour  # The colour of the piece
+            text="⬤",  # The displayed piece
+            fg=self._logic.current_player.colour  # The piece's colour
         )
 
     def _highlight_winning_squares(self) -> None:
-        """Highlights the squares containing the winner's combination."""
+        """Highlights the buttons containing the winning combination."""
         button: tkinter.Button
-        gui_winning_coordinates = [(BOARD_ROWS - coordinates[0] - 1, coordinates[1]) for coordinates in self._logic.winning_coordinates]
-        """Holds the GUI's winning coordinates translated from the logic's winning coordinates."""
+        gui_winning_coordinates: list[tuple[int, int]] = [(BOARD_ROWS - coordinates[0] - 1, coordinates[1])
+                                                          for coordinates in self._logic.winning_coordinates]
+        """The winning coordinates on the grid, translated from the logic's winning coordinates."""
 
-        # Finds the winner's combination and highlights them with the winner's colour
-        for button, coordinates in self._squares.items():
+        # Finds the winning combination and highlights each button with the winner's colour
+        for button, coordinates in self._buttons.items():
             if coordinates in gui_winning_coordinates:
                 button.config(
                     default="active",
@@ -107,8 +105,8 @@ class Graphics(tkinter.Tk):
                     highlightthickness=3
                 )
 
-    def _update_label(self, message, colour) -> None:
-        """Updates the label shown above the board with the given message and colour."""
+    def _update_label(self, message: str, colour: str) -> None:
+        """Updates the label with the given message and colour."""
         self.display.config(text=message, fg=colour)
 
     def play(self, event: tkinter.Event) -> None:
@@ -117,46 +115,48 @@ class Graphics(tkinter.Tk):
         Args:
             event: A button press.
         """
-        clicked_button = event.widget  # The button pressed on the board
-        clicked_column = self._squares[clicked_button][1]  # The column of the clicked button
+        clicked_button: tkinter.Button = event.widget
+        """The button clicked by the user."""
+        clicked_column = self._buttons[clicked_button][1]
+        """The column of the clicked button."""
 
-        # If the move is invalid, do nothing
-        if not self._logic.is_valid_move(clicked_column): return
+        if not self._logic.is_valid_move(clicked_column): return  # Ignore invalid moves
         
         actual_button: tkinter.Button = self._get_actual_button(clicked_button)
-        """The button that will display the piece."""
+        """The actual button with the placed piece."""
         
-        self._display_piece(actual_button)  # Display the current player's piece on the actual button
-        self._logic.handle_move(clicked_column)  # Processes the move
+        self._display_piece(actual_button)  # Display the piece placed in the button
+        self._logic.handle_move(clicked_column)  # Handles the move's logic
 
-        # If the game is tied, update the label and swap who goes first
+        # If the game is tied, switch who goes first in the next game
         if self._logic.is_tied():
             self._update_label("The game has ended in a tie.", "black")
             self._logic.switch_to_next_player()
         
-        # If the game is won, highlight the winning squares, update the label, and swap who goes first
+        # If the game is won, highlight the winning squares and switch who goes first in the next game
         elif self._logic._has_winner:
             self._highlight_winning_squares()
-            message = f"Player {self._logic.current_player.id} ({self._logic.current_player.colour}) won!"
+            message = f"Player {self._logic.current_player.id} ({self._logic.current_player.colour}) wins!"
             self._update_label(message, self._logic.current_player.colour)
             self._logic.switch_to_next_player()
 
-        else:  # If the game is ongoing, update the label
+        # If the game is ongoing, just update the label
+        else:
             message = f"Player {self._logic.current_player.id} ({self._logic.current_player.colour})'s turn."
             self._update_label(message, self._logic.current_player.colour)
 
-    def reset_board(self):
+    def reset_board(self) -> None:
         """Resets the game's label and board to a new game state."""
-        self._logic.reset_game()
+        self._logic.reset_game()  # Resets the game's logic
         message = f"Player {self._logic.current_player.id} ({self._logic.current_player.colour}), make the first move!"
         self._update_label(message, self._logic.current_player.colour)
 
-        # Resets all the buttons in the board to their initial state
-        for button in self._squares.keys():
+        # Resets the board's buttons to their initial state
+        for button in self._buttons.keys():
             button.config(
-                default="normal",  # Resets the button highlighting from a won game
-                text="",
-                highlightthickness=0  # Realigns the grid after the buttons are highlighted
+                default="normal",  # Undoes a button's highlighting from a won game
+                highlightthickness=0,  # Undoes a button's highlighting from a won game
+                text=""
             )
 
 
@@ -165,5 +165,4 @@ def main() -> None:
     Graphics(Logic()).mainloop()
 
 
-if __name__ == "__main__":
-    main()
+if __name__ == "__main__": main()

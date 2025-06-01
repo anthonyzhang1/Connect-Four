@@ -5,7 +5,6 @@ from tkinter import font
 import numpy
 import tkinter
 
-
 class Graphics(tkinter.Tk):
     """The game's graphics, including its window, label, and board."""
     def __init__(self, logic: Logic) -> None:
@@ -77,7 +76,7 @@ class Graphics(tkinter.Tk):
 
         Parameters:
             clicked_button: The clicked button.
-        
+
         Returns:
             The actual button the piece was placed in if the move was valid, and `None` otherwise.
         """
@@ -169,10 +168,8 @@ class Graphics(tkinter.Tk):
                 text=""
             )
 
-
 def main() -> None:
     """Launches the game."""
     Graphics(Logic()).mainloop()
-
 
 if __name__ == "__main__": main()

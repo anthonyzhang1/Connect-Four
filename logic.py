@@ -1,14 +1,14 @@
 """Handles the game's logic."""
 
 from itertools import cycle
+from win_detection import detect_win_in_row
 
 BOARD_ROWS = 6
 """The number of rows in the board."""
 BOARD_COLUMNS = 7
 """The number of columns in the board."""
 COMBINATION_LENGTH = 4
-"""The number of a player's pieces in a row required to win the game, e.g. 4 for four-in-a-row."""
-
+"""The number of a player's pieces in a row required to win, e.g. 4 for Connect Four."""
 
 class Player:
     """Represents a player and their ID and colour.
@@ -35,7 +35,6 @@ class Player:
         """The colour of the player's pieces."""
         self.winning_combination: str = str(id) * COMBINATION_LENGTH
         """The player's ID repeated COMBINATION_LENGTH times, e.g. "1111"."""
-
 
 class Square:
     """Represents a square in the board and the piece within it.
@@ -76,18 +75,15 @@ class Square:
             `True` if `other` is a `Square` and has the same `row`, `column`, and `player_id` as `self`.
             `False` otherwise.
         """
-        if not isinstance(other, Square):  # `other` must be a `Square` to be equivalent
-            return False
-
+        if not isinstance(other, Square): return False  # `other` must be a `Square` to be equivalent
+        
         return (self.row, self.column, self.player_id) == (other.row, other.column, other.player_id)
-
 
 PLAYERS = (
     Player(id=1, colour="blue"),
-    Player(id=2, colour="red"),
+    Player(id=2, colour="red")
 )
 """The players in the game."""
-
 
 class Logic:
     """The game's logic.
@@ -174,30 +170,6 @@ class Logic:
         """Whether the top row is full, i.e. it contains no empty squares (represented by `NO_ID`)."""
 
         return no_winner and top_row_is_full
-
-    def _check_for_win_in_row(self, row: int) -> list[tuple[int, int]] | None:
-        """Checks if there is four-in-a-row in the given row.
-
-        Args:
-            row: The index of the row to check.
-
-        Returns:
-            If there is a win, returns a list of the winning coordinates, e.g. [(0, 2), (0, 3), (0, 4), (0, 5)].
-              Only four coordinates are returned in case of a five-in-a-row or greater.
-            If there is no win, returns `None`.
-        """
-        row_squares: list[Square] = self._current_squares[row]
-        """A list of all the squares in the given row."""
-        row_as_string: str = "".join(str(square.player_id) for square in row_squares)
-        """The row represented as a string, where each character represents the piece in the square, e.g. "2211112"."""
-
-        # Looks for the four-in-a-row in `row_as_string` and gets the column it starts on, or -1 if there is no four-in-a-row
-        combination_start_column: int = row_as_string.find(self.current_player.winning_combination)
-
-        if combination_start_column >= 0:  # Four-in-a-row found: return the coordinates of the winning squares
-            return [(row, combination_start_column + i) for i in range(COMBINATION_LENGTH)]
-        else:  # No four-in-a-row found
-            return None
 
     def _check_for_win_in_column(self, column: int) -> list[tuple[int, int]] | None:
         """Checks if there is four-in-a-row in the given column.
@@ -323,40 +295,38 @@ class Logic:
         else:  # No four-in-a-row found
             return None
 
-    def handle_move(self, selected_column: int) -> None:
-        """Places the current player's piece in the first empty square in the selected column,
-        and checks if there is a win, i.e. a four-in-a-row. If there is no win, it becomes the next player's turn.
-        The move should be valid and checked beforehand.
+    def handle_move(self, column: int) -> None:
+        """Places the current player's piece in the first empty square in the column, and checks if there is a win.
+        The move should be validated beforehand.
 
         If there is a win, the winner and the winning coordinates are saved.
-        Only four coordinates of the first four-in-a-row found are saved, so not all of a five-in-a-row or greater is counted,
-        and four-in-a-rows after the first are not counted.
+          Only the first 4 coordinates of the first four-in-a-row found are saved.
+        If there is no win, it becomes the next player's turn.
 
         Args:
-            selected_column: The column selected for the move.
+            column: The column the move was played in.
         """
-        first_empty_square: Square = self.get_first_empty_square_in_column(selected_column)
-        """The first empty square in the column. Only its coordinates `row` and `column` should be used."""
+        actual_square: Square = self.get_first_empty_square_in_column(column)
+        """The square holding the placed piece."""
+        
+        # Places the piece in `actual_square`
+        self._current_squares[actual_square.row][actual_square.column].player_id = self.current_player.id
+        
+        # Detects wins in `actual_square`'s row
+        winning_coordinates: list[tuple[int, int]] | None = detect_win_in_row(self, actual_square.row)
 
-        # Places the current player's piece where the first empty square is
-        self._current_squares[first_empty_square.row][first_empty_square.column].player_id = self.current_player.id
-
-        # Checks for a win in the placed piece's row
-        winning_coordinates: list[tuple[int, int]] | None = self._check_for_win_in_row(first_empty_square.row)
-
-        # Checks for a win in the placed piece's column
-        if winning_coordinates is None: winning_coordinates = self._check_for_win_in_column(first_empty_square.column)
+        # Detects wins in `actual_square`'s column
+        if winning_coordinates is None: winning_coordinates = self._check_for_win_in_column(actual_square.column)
             
-        # Checks for a win in the placed piece's ascending diagonal
+        # Detects wins in `actual_square`'s ascending diagonal
         if winning_coordinates is None:
-            winning_coordinates = self._check_for_win_in_ascending_diagonal(first_empty_square.row, first_empty_square.column)
+            winning_coordinates = self._check_for_win_in_ascending_diagonal(actual_square.row, actual_square.column)
 
-        # Checks for a win in the placed piece's descending diagonal
+        # Detects wins in `actual_square`'s descending diagonal
         if winning_coordinates is None:
-            winning_coordinates = self._check_for_win_in_descending_diagonal(first_empty_square.row, first_empty_square.column)
+            winning_coordinates = self._check_for_win_in_descending_diagonal(actual_square.row, actual_square.column)
 
-        if winning_coordinates is None:  # If there is no win, continue the game
-            self.switch_to_next_player()
+        if winning_coordinates is None: self.switch_to_next_player()  # If there is no win
         else:  # If there is a win
             self._has_winner = True
             self.winning_coordinates = winning_coordinates

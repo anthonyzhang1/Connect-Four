@@ -116,12 +116,8 @@ class Logic:
         self._current_squares = [[Square(row, column) for column in range(BOARD_COLUMNS)] for row in range(BOARD_ROWS)]
 
     def reset_game(self) -> None:
-        """Resets the game state so a new game can be played."""
+        """Resets the game's logic to a new game state."""
         self._initialize_board()
-        
-        # If the game is won, let the loser have the first-move advantage next game
-        if self._has_winner: self.switch_to_next_player()
-
         # Resets variables related to the game's winner
         self._has_winner = False
         self.winning_coordinates = []
@@ -161,6 +157,23 @@ class Logic:
         game_is_ongoing: bool = not self._has_winner  # The game is ongoing if there is no winner
 
         return column_has_empty_square and game_is_ongoing
+    
+    def is_tied(self) -> bool:
+        """Determines if the game is tied, i.e. if there is no winner and the entire top row is full.
+
+        Returns:
+            `True` if the game is tied, and `False` otherwise.
+        """
+        no_winner = not self._has_winner
+        
+        top_row_list: list[Square] = self._current_squares[BOARD_ROWS - 1]
+        """A list of squares in the top row."""
+        top_row_string: str = "".join(str(square.player_id) for square in top_row_list)
+        """The pieces in the squares on the top row, e.g. "1222111"."""
+        top_row_is_full: bool = top_row_string.find(str(Square.NO_ID)) == -1
+        """Whether the top row is full, i.e. it contains no empty squares (represented by `NO_ID`)."""
+
+        return no_winner and top_row_is_full
 
     def _check_for_win_in_row(self, row: int) -> list[tuple[int, int]] | None:
         """Checks if there is four-in-a-row in the given row.

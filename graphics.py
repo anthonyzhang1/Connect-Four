@@ -10,9 +10,9 @@ class Graphics(tkinter.Tk):
     """The game's graphics, including its window, label, and board."""
     def __init__(self, logic: Logic) -> None:
         """Initializes the game's graphics.
-
+        
         Args:
-            logic: The logic for the game.
+            logic: The game's logic.
         """
         super().__init__()  # Inherit from tkinter
 
@@ -26,7 +26,7 @@ class Graphics(tkinter.Tk):
         self._create_label()
         self._create_board()
 
-    def _create_menu(self):
+    def _create_menu(self) -> None:
         """Creates a menu with options to start a new game or exit the game."""
         menu_bar = tkinter.Menu(master=self)
         self.config(menu=menu_bar)  # Sets `menu_bar` as the main menu
@@ -85,21 +85,21 @@ class Graphics(tkinter.Tk):
         # Returns the button with the matching coordinates
         return [button for button, coordinates in self._squares.items() if coordinates == (grid_row, actual_square.column)][0]
 
-    def _display_piece(self, button: tkinter.Button):
+    def _display_piece(self, button: tkinter.Button) -> None:
         """Displays the current player's piece on the provided button."""
         button.config(
             text="⬤",  # The piece to display
             fg=self._logic.current_player.colour  # The colour of the piece
         )
 
-    def _highlight_winning_squares(self):
+    def _highlight_winning_squares(self) -> None:
         """Highlights the squares containing the winner's combination."""
         button: tkinter.Button
         gui_winning_coordinates = [(BOARD_ROWS - coordinates[0] - 1, coordinates[1]) for coordinates in self._logic.winning_coordinates]
         """Holds the GUI's winning coordinates translated from the logic's winning coordinates."""
 
+        # Finds the winner's combination and highlights them with the winner's colour
         for button, coordinates in self._squares.items():
-            # Finds the winner's combination and highlights them with the winner's colour.
             if coordinates in gui_winning_coordinates:
                 button.config(
                     default="active",
@@ -107,7 +107,7 @@ class Graphics(tkinter.Tk):
                     highlightthickness=3
                 )
 
-    def _update_label(self, message, colour):
+    def _update_label(self, message, colour) -> None:
         """Updates the label shown above the board with the given message and colour."""
         self.display.config(text=message, fg=colour)
 
@@ -121,27 +121,32 @@ class Graphics(tkinter.Tk):
         clicked_column = self._squares[clicked_button][1]  # The column of the clicked button
 
         # If the move is invalid, do nothing
-        if not self._logic.is_valid_move(clicked_column):
-            return
+        if not self._logic.is_valid_move(clicked_column): return
         
-        actual_button = self._get_actual_button(clicked_button)
+        actual_button: tkinter.Button = self._get_actual_button(clicked_button)
         """The button that will display the piece."""
         
-        # If the move is valid:
         self._display_piece(actual_button)  # Display the current player's piece on the actual button
         self._logic.handle_move(clicked_column)  # Processes the move
 
-        if self._logic._has_winner:  # If game is won, highlight the winning squares and update the label
+        # If the game is tied, update the label and swap who goes first
+        if self._logic.is_tied():
+            self._update_label("The game has ended in a tie.", "black")
+            self._logic.switch_to_next_player()
+        
+        # If the game is won, highlight the winning squares, update the label, and swap who goes first
+        elif self._logic._has_winner:
             self._highlight_winning_squares()
-            
             message = f"Player {self._logic.current_player.id} ({self._logic.current_player.colour}) won!"
             self._update_label(message, self._logic.current_player.colour)
-        else:  # If the game is not over yet, update the label
+            self._logic.switch_to_next_player()
+
+        else:  # If the game is ongoing, update the label
             message = f"Player {self._logic.current_player.id} ({self._logic.current_player.colour})'s turn."
             self._update_label(message, self._logic.current_player.colour)
 
     def reset_board(self):
-        """Resets the game's board and label so a new game can be played."""
+        """Resets the game's label and board to a new game state."""
         self._logic.reset_game()
         message = f"Player {self._logic.current_player.id} ({self._logic.current_player.colour}), make the first move!"
         self._update_label(message, self._logic.current_player.colour)

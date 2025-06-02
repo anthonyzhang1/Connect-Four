@@ -1,7 +1,7 @@
 """Handles the game's logic."""
 
 from itertools import cycle
-from win_detection import detect_win_in_ascending_diagonal, detect_win_in_column, detect_win_in_row
+from win_detection import detect_win_in_ascending_diagonal, detect_win_in_descending_diagonal, detect_win_in_column, detect_win_in_row
 
 BOARD_ROWS = 6
 """The number of rows in the board."""
@@ -170,45 +170,11 @@ class Logic:
         """Whether the top row is full, i.e. it contains no empty squares (represented by `NO_ID`)."""
 
         return no_winner and top_row_is_full
-        
-    def _check_for_win_in_descending_diagonal(self, row: int, column: int) -> list[tuple[int, int]] | None:
-        """Checks if there is a win in the square's descending diagonal.
-
-        Parameters:
-            row: The index of the row being checked.
-            column: The index of the column being checked.
-
-        Returns:
-            If there is a win, returns a list of the winning coordinates, e.g. [(3, 0), (2, 1), (1, 2), (0, 3)].
-              Only the first 4 winning coordinates are returned.
-            If there is no win, returns `None`.
-        """
-        # Gets the descending diagonal's origin coordinates and assigns them to `row` and `column`
-        while row < BOARD_ROWS - 1 and column > 0:
-            row += 1
-            column -= 1
-        
-        diagonal_length: int = min(row + 1, BOARD_COLUMNS - column)
-        """The length of the descending diagonal. It increases as the diagonal starts closer to the top and left edges of the board."""
-        diagonal_squares: list[Square] = []
-        """A list of all the squares in the descending diagonal."""
-
-        # Appends all squares on the diagonal to `diagonal_squares`
-        for i in range(diagonal_length): diagonal_squares.append(self.current_squares[row - i][column + i])
-        
-        diagonal_string: str = "".join(str(square.player_id) for square in diagonal_squares)
-        """The diagonal represented as a string, where each character represents the piece in the square, e.g. "002222"."""
-        win_start_offset: int = diagonal_string.find(self.current_player.winning_combination)
-        """The index (i.e. offset) the winning combination starts on, or -1 if there is no win."""
-
-        # If win found: The winning combination starts at the starting coordinates +/- the offset
-        if win_start_offset >= 0: return [(row - win_start_offset - i, column + win_start_offset + i) for i in range(COMBINATION_LENGTH)]
-        else: return None  # No win found
 
     def handle_move(self, column: int) -> None:
-        """Places the current player's piece in the first empty square in the column. Then, checks if there is a win.
+        """Places the current player's piece in the first empty square in the column, and checks if there is a win.
         Invalid moves are discarded.
-        
+
         If there is a win, the winner and the winning coordinates are saved.
           Only the first 4 coordinates of the first four-in-a-row found are saved.
         If there is no win, it becomes the next player's turn.
@@ -236,7 +202,7 @@ class Logic:
 
         # If the game isn't won yet, check for wins in `actual_square`'s descending diagonal
         if winning_coordinates is None:
-            winning_coordinates = self._check_for_win_in_descending_diagonal(actual_square.row, actual_square.column)
+            winning_coordinates = detect_win_in_descending_diagonal(self, actual_square.row, actual_square.column)
 
         if winning_coordinates is None: self.switch_to_next_player()  # If there is no win
         else:  # If there is a win

@@ -76,3 +76,34 @@ def detect_win_in_ascending_diagonal(logic: "Logic.Logic", row: int, column: int
     if win_start_offset >= 0:  # Win found
         return [(row + win_start_offset + i, column + win_start_offset + i) for i in range(Logic.COMBINATION_LENGTH)]
     else: return None  # No win found
+
+def detect_win_in_descending_diagonal(logic: "Logic.Logic", row: int, column: int) -> list[tuple[int, int]] | None:
+    """Detects if there is a win in the descending diagonal.
+
+    Parameters:
+        logic: The current game's logic.
+        row: The index of the row being checked.
+        column: The index of the column being checked.
+
+    Returns:
+        If there is a win, returns a list of the winning coordinates, e.g. [(3, 0), (2, 1), (1, 2), (0, 3)].
+            Only the first 4 winning coordinates are returned.
+        If there is no win, returns `None`.
+    """
+    # Gets the descending diagonal's origin coordinates and assigns them to `row` and `column`
+    while row < Logic.BOARD_ROWS - 1 and column > 0:
+        row += 1
+        column -= 1
+    
+    diagonal_length: int = min(row + 1, Logic.BOARD_COLUMNS - column)
+    """The length of the descending diagonal. It increases as the diagonal starts closer to the top and left edges of the board."""
+    diagonal_squares: list[Logic.Square] = [logic.current_squares[row - i][column + i] for i in range(diagonal_length)]
+    """A list of all the squares in the descending diagonal."""
+    diagonal_string: str = "".join(str(square.player_id) for square in diagonal_squares)
+    """The diagonal represented as a string, where each character represents the piece in the square, e.g. "002222"."""
+    win_start_offset: int = diagonal_string.find(logic.current_player.winning_combination)
+    """The offset from the diagonal's origin the winning combination starts on, or -1 if there is no win."""
+
+    if win_start_offset >= 0:  # Win found
+        return [(row - win_start_offset - i, column + win_start_offset + i) for i in range(Logic.COMBINATION_LENGTH)]
+    else: return None  # No win found

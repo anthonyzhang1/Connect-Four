@@ -134,7 +134,7 @@ class Graphics(tkinter.Tk):
         actual_button: tkinter.Button = self._get_actual_button(clicked_button)
         """The actual button with the placed piece."""
         
-        self._display_piece(actual_button)  # Display the piece placed in the button
+        self._display_piece(actual_button)  # Display the placed piece in the button
         self._logic.handle_move(clicked_column)  # Handles the move's logic
 
         # If the game is tied, switch who goes first in the next game

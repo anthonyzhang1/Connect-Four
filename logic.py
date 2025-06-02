@@ -22,7 +22,7 @@ class Player:
     def __init__(self, id: int, colour: str) -> None:
         """Initializes the player and their attributes.
 
-        Args:
+        Parameters:
             id: This player's ID. Must be between 1 and 9, inclusive.
             colour: The colour of this player's pieces.
         """
@@ -51,7 +51,7 @@ class Square:
     def __init__(self, row: int, column: int, player_id: int = NO_ID) -> None:
         """Initializes the square and its attributes.
 
-        Args:
+        Parameters:
             row: The row this square is on.
             column: The column this square is on.
             player_id: The ID of the player who is placing their piece in this square.
@@ -68,7 +68,7 @@ class Square:
         """Defines how the `==` operator behaves for `Square`.
         `Square` objects are equivalent if they have the same `row`, `column`, and `player_id`.
 
-        Args:
+        Parameters:
             other: The other object to compare to.
 
         Returns:
@@ -125,7 +125,7 @@ class Logic:
     def get_first_empty_square_in_column(self, column: int) -> Square | None:
         """Gets the first empty square in the given column, if there is one.
 
-        Args:
+        Parameters:
             column: The index of the column to search in.
 
         Returns:
@@ -142,7 +142,7 @@ class Logic:
         """Checks if a move is valid.
         A move is valid if the selected column has an empty square, and the game is ongoing (i.e. not over).
 
-        Args:
+        Parameters:
             selected_column: The column selected for the move.
 
         Returns:
@@ -206,19 +206,21 @@ class Logic:
         else: return None  # No win found
 
     def handle_move(self, column: int) -> None:
-        """Places the current player's piece in the first empty square in the column, and checks if there is a win.
-        The move should be validated beforehand.
-
+        """Places the current player's piece in the first empty square in the column. Then, checks if there is a win.
+        Invalid moves are discarded.
+        
         If there is a win, the winner and the winning coordinates are saved.
           Only the first 4 coordinates of the first four-in-a-row found are saved.
         If there is no win, it becomes the next player's turn.
 
-        Args:
-            column: The column the move was played in.
+        Parameters:
+            column: The column to make the move in.
         """
-        actual_square: Square = self.get_first_empty_square_in_column(column)
-        """The square holding the placed piece."""
-        
+        actual_square: Square | None = self.get_first_empty_square_in_column(column)
+        """The square holding the placed piece. `None` if the move is invalid."""
+
+        if actual_square is None: return  # Discard invalid moves
+
         # Places the piece in `actual_square`
         self.current_squares[actual_square.row][actual_square.column].player_id = self.current_player.id
         
@@ -227,12 +229,12 @@ class Logic:
 
         # If the game isn't won yet, check for wins in `actual_square`'s column
         if winning_coordinates is None: winning_coordinates = detect_win_in_column(self, actual_square.column)
-        
+
         # If the game isn't won yet, check for wins in `actual_square`'s ascending diagonal
         if winning_coordinates is None:
             winning_coordinates = detect_win_in_ascending_diagonal(self, actual_square.row, actual_square.column)
 
-        # Detects wins in `actual_square`'s descending diagonal
+        # If the game isn't won yet, check for wins in `actual_square`'s descending diagonal
         if winning_coordinates is None:
             winning_coordinates = self._check_for_win_in_descending_diagonal(actual_square.row, actual_square.column)
 

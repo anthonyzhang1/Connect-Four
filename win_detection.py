@@ -16,9 +16,9 @@ def detect_win_in_row(logic: "Logic.Logic", row: int) -> list[tuple[int, int]] |
     """
     row_squares: list[Logic.Square] = logic.current_squares[row]
     """A list of all the squares in the row."""
-    row_as_string: str = "".join(str(square.player_id) for square in row_squares)
+    row_string: str = "".join(str(square.player_id) for square in row_squares)
     """The row represented as a string, where each character represents the piece in the square, e.g. "0211112"."""
-    win_start_column: int = row_as_string.find(logic.current_player.winning_combination)
+    win_start_column: int = row_string.find(logic.current_player.winning_combination)
     """The column the winning combination starts on, or -1 if there is no win."""
 
     if win_start_column >= 0: return [(row, win_start_column + i) for i in range(Logic.COMBINATION_LENGTH)]  # Win found

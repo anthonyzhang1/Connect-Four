@@ -143,7 +143,7 @@ class Graphics(tkinter.Tk):
             self._logic.switch_to_next_player()
         
         # If the game is won, highlight the winning squares and switch who goes first in the next game
-        elif self._logic._has_winner:
+        elif self._logic.has_winner:
             self._highlight_winning_squares()
             message = f"Player {self._logic.current_player.id} ({self._logic.current_player.colour}) wins!"
             self._update_label(message, self._logic.current_player.colour)

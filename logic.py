@@ -1,7 +1,7 @@
 """Handles the game's logic."""
 
 from itertools import cycle
-from win_detection import detect_win_in_row
+from win_detection import detect_win_in_column, detect_win_in_row
 
 BOARD_ROWS = 6
 """The number of rows in the board."""
@@ -96,9 +96,9 @@ class Logic:
         """Initializes the game's logic."""
         self._players = cycle(PLAYERS)
         """The players in the game, in a cycle."""
-        self._current_squares: list[list[Square]] = []
+        self.current_squares: list[list[Square]] = []
         """A list with all of the squares in the board, in the form [row][column]."""
-        self._has_winner: bool = False
+        self.has_winner: bool = False
         """Used to determine if the game has a winner."""
         self.winning_coordinates: list[tuple[int, int]] = []
         """The coordinates of the squares which won the game, e.g. [(0, 2), (0, 3), ...]"""
@@ -109,13 +109,13 @@ class Logic:
 
     def _initialize_board(self) -> None:
         """Initialize all of the squares in the board, in the form [row][column]."""
-        self._current_squares = [[Square(row, column) for column in range(BOARD_COLUMNS)] for row in range(BOARD_ROWS)]
+        self.current_squares = [[Square(row, column) for column in range(BOARD_COLUMNS)] for row in range(BOARD_ROWS)]
 
     def reset_game(self) -> None:
         """Resets the game's logic to a new game state."""
         self._initialize_board()
         # Resets variables related to the game's winner
-        self._has_winner = False
+        self.has_winner = False
         self.winning_coordinates = []
 
     def switch_to_next_player(self) -> None:
@@ -131,7 +131,7 @@ class Logic:
         Returns:
             The first empty square in the column, or `None` if the column has no empty squares.
         """
-        column_squares: list[Square] = [row[column] for row in self._current_squares]
+        column_squares: list[Square] = [row[column] for row in self.current_squares]
         """A list of all the squares in the given column."""
 
         # Iterate through `column_squares` and return the first empty square.
@@ -150,7 +150,7 @@ class Logic:
         """
         # Checks if there is an empty square in the selected column
         column_has_empty_square: bool = self.get_first_empty_square_in_column(selected_column) is not None
-        game_is_ongoing: bool = not self._has_winner  # The game is ongoing if there is no winner
+        game_is_ongoing: bool = not self.has_winner  # The game is ongoing if there is no winner
 
         return column_has_empty_square and game_is_ongoing
     
@@ -160,9 +160,9 @@ class Logic:
         Returns:
             `True` if the game is tied, and `False` otherwise.
         """
-        no_winner = not self._has_winner
+        no_winner = not self.has_winner
         
-        top_row_list: list[Square] = self._current_squares[BOARD_ROWS - 1]
+        top_row_list: list[Square] = self.current_squares[BOARD_ROWS - 1]
         """A list of squares in the top row."""
         top_row_string: str = "".join(str(square.player_id) for square in top_row_list)
         """The pieces in the squares on the top row, e.g. "1222111"."""
@@ -170,30 +170,6 @@ class Logic:
         """Whether the top row is full, i.e. it contains no empty squares (represented by `NO_ID`)."""
 
         return no_winner and top_row_is_full
-
-    def _check_for_win_in_column(self, column: int) -> list[tuple[int, int]] | None:
-        """Checks if there is four-in-a-row in the given column.
-
-        Args:
-            column: The index of the column to check.
-
-        Returns:
-            If there is a win, returns a list of the winning coordinates, e.g. [(0, 2), (1, 2), (2, 2), (3, 2)].
-              Only four coordinates are returned in case of a five-in-a-row or greater.
-            If there is no win, returns `None`.
-        """
-        column_squares: list[Square] = [row[column] for row in self._current_squares]
-        """A list of all the squares in the given column."""
-        column_as_string: str = "".join(str(square.player_id) for square in column_squares)
-        """The column represented as a string, where each character represents the piece in the square, e.g. "1111000"."""
-
-        # Looks for the four-in-a-row in `column_as_string` and gets the row it starts on, or -1 if there is no four-in-a-row
-        combination_start_row: int = column_as_string.find(self.current_player.winning_combination)
-
-        if combination_start_row >= 0:  # Four-in-a-row found: return the coordinates of the winning squares
-            return [(combination_start_row + i, column) for i in range(COMBINATION_LENGTH)]
-        else:  # No four-in-a-row found
-            return None
 
     def _get_ascending_diagonal_start_coordinates(self, row: int, column: int) -> tuple[int, int]:
         """Gets the starting coordinates of the ascending diagonal that intersects (row, column).
@@ -231,7 +207,7 @@ class Logic:
         """A list of all the squares in the ascending diagonal."""
 
         for i in range(diagonal_length):  # Appends all the squares on the diagonal to `diagonal_squares`
-            diagonal_squares.append(self._current_squares[diagonal_start_coordinates[0] + i][diagonal_start_coordinates[1] + i])
+            diagonal_squares.append(self.current_squares[diagonal_start_coordinates[0] + i][diagonal_start_coordinates[1] + i])
 
         diagonal_as_string: str = "".join(str(square.player_id) for square in diagonal_squares)
         """The diagonal represented as a string, where each character represents the piece in the square, e.g. "222200"."""
@@ -281,7 +257,7 @@ class Logic:
         """A list of all the squares in the descending diagonal."""
 
         for i in range(diagonal_length):  # Appends all the squares on the diagonal to `diagonal_squares`
-            diagonal_squares.append(self._current_squares[diagonal_start_coordinates[0] - i][diagonal_start_coordinates[1] + i])
+            diagonal_squares.append(self.current_squares[diagonal_start_coordinates[0] - i][diagonal_start_coordinates[1] + i])
 
         diagonal_as_string: str = "".join(str(square.player_id) for square in diagonal_squares)
         """The diagonal represented as a string, where each character represents the piece in the square, e.g. "002222"."""
@@ -310,14 +286,14 @@ class Logic:
         """The square holding the placed piece."""
         
         # Places the piece in `actual_square`
-        self._current_squares[actual_square.row][actual_square.column].player_id = self.current_player.id
+        self.current_squares[actual_square.row][actual_square.column].player_id = self.current_player.id
         
-        # Detects wins in `actual_square`'s row
+        # Check for wins in `actual_square`'s row
         winning_coordinates: list[tuple[int, int]] | None = detect_win_in_row(self, actual_square.row)
 
-        # Detects wins in `actual_square`'s column
-        if winning_coordinates is None: winning_coordinates = self._check_for_win_in_column(actual_square.column)
-            
+        # If the game isn't won yet, check for wins in `actual_square`'s column
+        if winning_coordinates is None: winning_coordinates = detect_win_in_column(self, actual_square.column)
+        
         # Detects wins in `actual_square`'s ascending diagonal
         if winning_coordinates is None:
             winning_coordinates = self._check_for_win_in_ascending_diagonal(actual_square.row, actual_square.column)
@@ -328,5 +304,5 @@ class Logic:
 
         if winning_coordinates is None: self.switch_to_next_player()  # If there is no win
         else:  # If there is a win
-            self._has_winner = True
+            self.has_winner = True
             self.winning_coordinates = winning_coordinates

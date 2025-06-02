@@ -42,7 +42,7 @@ def test_check_for_win_in_row(logic: Logic) -> None:
     logic.handle_move(4)  # Player 1's move: [2211112]
 
     # Checks that the game is won.
-    assert logic._has_winner == True, "The game did not have a row winner."
+    assert logic.has_winner == True, "The game did not have a row winner."
 
 
 def test_check_for_win_in_column(logic: Logic) -> None:
@@ -58,7 +58,7 @@ def test_check_for_win_in_column(logic: Logic) -> None:
     logic.handle_move(2)  # Player 1's move: [1111000]
 
     # Checks that the game is won.
-    assert logic._has_winner == True, "The game did not have a column winner."
+    assert logic.has_winner == True, "The game did not have a column winner."
 
 
 def test_check_for_win_in_ascending_diagonal(logic: Logic) -> None:
@@ -81,7 +81,7 @@ def test_check_for_win_in_ascending_diagonal(logic: Logic) -> None:
     logic.handle_move(4)  # Player 2's move on Row 3: [0,0,0,0,2,0,0]
 
     # Checks that the game is won.
-    assert logic._has_winner == True, "The game did not have an ascending diagonal winner."
+    assert logic.has_winner == True, "The game did not have an ascending diagonal winner."
 
 
 def test_check_for_win_in_descending_diagonal(logic: Logic) -> None:
@@ -104,4 +104,4 @@ def test_check_for_win_in_descending_diagonal(logic: Logic) -> None:
     logic.handle_move(2)  # Player 2's move on Row 3: [0,0,2,0,0,0,0]
 
     # Checks that the game is won.
-    assert logic._has_winner == True, "The game did not have a descending diagonal winner."
+    assert logic.has_winner == True, "The game did not have a descending diagonal winner."

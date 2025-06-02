@@ -10,7 +10,7 @@ def detect_win_in_row(logic: "Logic.Logic", row: int) -> list[tuple[int, int]] |
         row: The index of the row being checked.
     
     Returns:
-        If there is a win, returns a list of the winning coordinates, e.g. [(0, 2), (0, 3), (0, 4), (0, 5)].
+        If there is a win, returns a list of the winning coordinates, e.g. [(0, 0), (0, 1), (0, 2), (0, 3)].
           Only the first 4 winning coordinates are returned.
         If there is no win, returns `None`.
     """
@@ -32,7 +32,7 @@ def detect_win_in_column(logic: "Logic.Logic", column: int) -> list[tuple[int, i
         column: The index of the column being checked.
 
     Returns:
-        If there is a win, returns a list of the winning coordinates, e.g. [(0, 2), (1, 2), (2, 2), (3, 2)].
+        If there is a win, returns a list of the winning coordinates, e.g. [(0, 0), (1, 0), (2, 0), (3, 0)].
           Only the first 4 winning coordinates are returned.
         If there is no win, returns `None`.
     """

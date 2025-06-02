@@ -171,105 +171,73 @@ class Logic:
 
         return no_winner and top_row_is_full
 
-    def _get_ascending_diagonal_start_coordinates(self, row: int, column: int) -> tuple[int, int]:
-        """Gets the starting coordinates of the ascending diagonal that intersects (row, column).
+    def _check_for_win_in_ascending_diagonal(self, row: int, column: int) -> list[tuple[int, int]] | None:
+        """Checks if there is a win in the square's ascending diagonal.
 
-        Args:
-            row: The index of the checked square's row.
-            column: The index of the checked square's column.
+        Parameters:
+            row: The index of the row being checked.
+            column: The index of the column being checked.
 
         Returns:
-            Returns the row and column of the bottom-leftmost square on the intersecting ascending diagonal, e.g. (1, 0).
+            If there is a win, returns a list of the winning coordinates, e.g. [(0, 0), (1, 1), (2, 2), (3, 3)].
+              Only the first 4 winning coordinates are returned.
+            If there is no win, returns `None`.
         """
-        while row and column > 0:  # Gets the bottom-leftmost coordinate on the ascending diagonal
+        # Gets the ascending diagonal's origin coordinates and assigns them to `row` and `column`
+        while row and column > 0:
             row -= 1
             column -= 1
 
-        return (row, column)
-
-    def _check_for_win_in_ascending_diagonal(self, row: int, column: int) -> list[tuple[int, int]] | None:
-        """Checks if there is a win in the given square's ascending diagonal.
-
-        Args:
-            row: The index of the checked square's row.
-            column: The index of the checked square's column.
-
-        Returns:
-            If there is a win, returns a list of the winning coordinates, e.g. [(0, 1), (1, 2), (2, 3), (3, 4)].
-              Only four coordinates are returned in case of a five-in-a-row or greater.
-            If there is no win, returns `None`.
-        """
-        diagonal_start_coordinates: tuple[int, int] = self._get_ascending_diagonal_start_coordinates(row, column)
-        """The coordinates of the bottom-leftmost square on the diagonal."""
-        diagonal_length: int = min(BOARD_ROWS - diagonal_start_coordinates[0], BOARD_COLUMNS - diagonal_start_coordinates[1])
-        """The length of the ascending diagonal. It decreases as the diagonal starts closer to the top or right edges of the board."""
+        diagonal_length: int = min(BOARD_ROWS - row, BOARD_COLUMNS - column)
+        """The length of the ascending diagonal. It increases as the diagonal starts closer to the bottom and left edges of the board."""
         diagonal_squares: list[Square] = []
         """A list of all the squares in the ascending diagonal."""
 
-        for i in range(diagonal_length):  # Appends all the squares on the diagonal to `diagonal_squares`
-            diagonal_squares.append(self.current_squares[diagonal_start_coordinates[0] + i][diagonal_start_coordinates[1] + i])
+        # Appends all squares on the diagonal to `diagonal_squares`
+        for i in range(diagonal_length): diagonal_squares.append(self.current_squares[row + i][column + i])
 
-        diagonal_as_string: str = "".join(str(square.player_id) for square in diagonal_squares)
-        """The diagonal represented as a string, where each character represents the piece in the square, e.g. "222200"."""
-        combination_start_offset: int = diagonal_as_string.find(self.current_player.winning_combination)
-        """Stores the index (i.e. offset) of the start of the winning combination in `diagonal_as_string`, or -1 if there is no win."""
+        diagonal_string: str = "".join(str(square.player_id) for square in diagonal_squares)
+        """The diagonal represented as a string, where each character represents the piece in the square, e.g. "122220"."""
+        win_start_offset: int = diagonal_string.find(self.current_player.winning_combination)
+        """The index (i.e. offset) the winning combination starts on, or -1 if there is no win."""
 
-        if combination_start_offset >= 0:  # Four-in-a-row found: returns the coordinates of the winning squares
-            # The winning combination's starting row and column is found with the starting coordinates + the offset
-            return [(diagonal_start_coordinates[0] + combination_start_offset + i,
-                     diagonal_start_coordinates[1] + combination_start_offset + i) for i in range(COMBINATION_LENGTH)]
-        else:  # No four-in-a-row found
-            return None
-        
-    def _get_descending_diagonal_start_coordinates(self, row: int, column: int) -> tuple[int, int]:
-        """Gets the starting coordinates of the descending diagonal that intersects (row, column).
-
-        Args:
-            row: The index of the checked square's row.
-            column: The index of the checked square's column.
-
-        Returns:
-            Returns the row and column of the top-leftmost square on the intersecting descending diagonal, e.g. (5, 0).
-        """
-        while row < BOARD_ROWS - 1 and column > 0:  # Gets the top-leftmost coordinate on the descending diagonal
-            row += 1
-            column -= 1
-
-        return (row, column)
+        # If win found: The winning combination starts at the starting coordinates + the offset
+        if win_start_offset >= 0: return [(row + win_start_offset + i, column + win_start_offset + i) for i in range(COMBINATION_LENGTH)]
+        else: return None  # No win found
         
     def _check_for_win_in_descending_diagonal(self, row: int, column: int) -> list[tuple[int, int]] | None:
-        """Checks if there is a win in the given square's descending diagonal.
+        """Checks if there is a win in the square's descending diagonal.
 
-        Args:
-            row: The index of the checked square's row.
-            column: The index of the checked square's column.
+        Parameters:
+            row: The index of the row being checked.
+            column: The index of the column being checked.
 
         Returns:
-            If there is a win, returns a list of the winning coordinates, e.g. [(3, 2), (2, 3), (1, 4), (0, 5)].
-              Only four coordinates are returned in case of a five-in-a-row or greater.
+            If there is a win, returns a list of the winning coordinates, e.g. [(3, 0), (2, 1), (1, 2), (0, 3)].
+              Only the first 4 winning coordinates are returned.
             If there is no win, returns `None`.
         """
-        diagonal_start_coordinates: tuple[int, int] = self._get_descending_diagonal_start_coordinates(row, column)
-        """The coordinates of the top-leftmost square on the diagonal."""
-        diagonal_length: int = min(diagonal_start_coordinates[0] + 1, BOARD_COLUMNS - diagonal_start_coordinates[1])
-        """The length of the descending diagonal. It decreases as the diagonal starts closer to the bottom or right edges of the board."""
+        # Gets the descending diagonal's origin coordinates and assigns them to `row` and `column`
+        while row < BOARD_ROWS - 1 and column > 0:
+            row += 1
+            column -= 1
+        
+        diagonal_length: int = min(row + 1, BOARD_COLUMNS - column)
+        """The length of the descending diagonal. It increases as the diagonal starts closer to the top and left edges of the board."""
         diagonal_squares: list[Square] = []
         """A list of all the squares in the descending diagonal."""
 
-        for i in range(diagonal_length):  # Appends all the squares on the diagonal to `diagonal_squares`
-            diagonal_squares.append(self.current_squares[diagonal_start_coordinates[0] - i][diagonal_start_coordinates[1] + i])
-
-        diagonal_as_string: str = "".join(str(square.player_id) for square in diagonal_squares)
+        # Appends all squares on the diagonal to `diagonal_squares`
+        for i in range(diagonal_length): diagonal_squares.append(self.current_squares[row - i][column + i])
+        
+        diagonal_string: str = "".join(str(square.player_id) for square in diagonal_squares)
         """The diagonal represented as a string, where each character represents the piece in the square, e.g. "002222"."""
-        combination_start_offset: int = diagonal_as_string.find(self.current_player.winning_combination)
-        """Stores the index (i.e. offset) of the start of the winning combination in `diagonal_as_string`, or -1 if there is no win."""
+        win_start_offset: int = diagonal_string.find(self.current_player.winning_combination)
+        """The index (i.e. offset) the winning combination starts on, or -1 if there is no win."""
 
-        if combination_start_offset >= 0:  # Four-in-a-row found: returns the coordinates of the winning squares
-            # The winning combination's starting row and column is found with the starting coordinates +- the offset
-            return [(diagonal_start_coordinates[0] - combination_start_offset - i,
-                     diagonal_start_coordinates[1] + combination_start_offset + i) for i in range(COMBINATION_LENGTH)]
-        else:  # No four-in-a-row found
-            return None
+        # If win found: The winning combination starts at the starting coordinates +/- the offset
+        if win_start_offset >= 0: return [(row - win_start_offset - i, column + win_start_offset + i) for i in range(COMBINATION_LENGTH)]
+        else: return None  # No win found
 
     def handle_move(self, column: int) -> None:
         """Places the current player's piece in the first empty square in the column, and checks if there is a win.

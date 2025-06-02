@@ -15,8 +15,8 @@ class Graphics(tkinter.Tk):
         """
         super().__init__()  # Inherit from tkinter
 
-        self._buttons: dict[tkinter.Button] = {}
-        """The buttons making up the board."""
+        self._buttons: dict[tkinter.Button, tuple[int, int]] = {}
+        """The buttons making up the board, in the form {Button: (row, column)}."""
         self._logic: Logic = logic
         """The game's logic."""
 
@@ -66,8 +66,9 @@ class Graphics(tkinter.Tk):
                 width=3  # Affects the button's proportions
             )
 
-            self._buttons[button] = (row, column)  # Assigns the button's coordinates
-            button.bind("<ButtonPress-1>", self.play)  # Clicking the button calls play()
+            # Adjusts the button's row index to match the logic's row index, then assigns the button's coordinates
+            self._buttons[button] = (BOARD_ROWS - row - 1, column)
+            button.bind("<ButtonPress-1>", self.play)  # Left-clicking the button calls play()
             button.grid(row=row, column=column)  # Places the button into the board's grid
 
     def _get_actual_button(self, clicked_button: tkinter.Button) -> tkinter.Button | None:
@@ -83,13 +84,10 @@ class Graphics(tkinter.Tk):
         actual_square: Square | None = self._logic.get_first_empty_square_in_column(self._buttons[clicked_button][1])
         """The piece's actual square, if the move was valid. `None` otherwise."""
 
-        if actual_square is None: return None  # If the move was invalid
+        if actual_square is None: return None  # Invalid move
 
-        actual_row: int = BOARD_ROWS - actual_square.row - 1
-        """The piece's actual row on the grid, translated from the logic's row index."""
-
-        # Returns the actual button matching the piece's coordinates
-        return [button for button, coordinates in self._buttons.items() if coordinates == (actual_row, actual_square.column)][0]
+        # Returns the actual button with the placed piece's coordinates
+        return [button for button, coordinates in self._buttons.items() if coordinates == (actual_square.row, actual_square.column)][0]
 
     def _display_piece(self, button: tkinter.Button) -> None:
         """Displays the current player's piece on a button."""
@@ -100,14 +98,9 @@ class Graphics(tkinter.Tk):
 
     def _highlight_winning_squares(self) -> None:
         """Highlights the buttons containing the winning combination."""
-        button: tkinter.Button
-        winning_coordinates: list[tuple[int, int]] = [(BOARD_ROWS - coordinates[0] - 1, coordinates[1])
-                                                      for coordinates in self._logic.winning_coordinates]
-        """The grid's winning coordinates, translated from the logic's winning coordinates."""
-
         # Finds the buttons with the winning coordinates and highlights them with the winner's colour
         for button, coordinates in self._buttons.items():
-            if coordinates in winning_coordinates:
+            if coordinates in self._logic.winning_coordinates:
                 button.config(
                     default="active",  # Highlights the button
                     highlightcolor=self._logic.current_player.colour,

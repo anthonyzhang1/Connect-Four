@@ -131,16 +131,16 @@ class Graphics(tkinter.Tk):
         self._logic.handle_move(clicked_column)  # Handles the move's logic
 
         # If the game is tied, switch who goes first in the next game
-        if self._logic.is_tied():
+        if self._logic.game_is_tied():
             self._update_label("The game has ended in a tie.", "black")
-            self._logic.switch_to_next_player()
+            self._logic.switch_players()
         
         # If the game is won, highlight the winning squares and switch who goes first in the next game
-        elif self._logic.has_winner:
+        elif self._logic.game_is_won:
             self._highlight_winning_squares()
             message = f"Player {self._logic.current_player.id} ({self._logic.current_player.colour}) wins!"
             self._update_label(message, self._logic.current_player.colour)
-            self._logic.switch_to_next_player()
+            self._logic.switch_players()
 
         # If the game is ongoing, just update the label
         else:

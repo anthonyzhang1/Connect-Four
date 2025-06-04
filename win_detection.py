@@ -14,7 +14,7 @@ def detect_win_in_row(logic: "Logic.Logic", row: int) -> list[tuple[int, int]] |
           Only the first 4 winning coordinates are returned.
         If there is no win, returns `None`.
     """
-    row_squares: list[Logic.Square] = logic.current_squares[row]
+    row_squares: list[Logic.Square] = logic.squares[row]
     """A list of all the squares in the row."""
     row_string: str = "".join(str(square.player_id) for square in row_squares)
     """The row represented as a string, where each character represents the piece in the square, e.g. "0211112"."""
@@ -36,7 +36,7 @@ def detect_win_in_column(logic: "Logic.Logic", column: int) -> list[tuple[int, i
           Only the first 4 winning coordinates are returned.
         If there is no win, returns `None`.
     """
-    column_squares: list[Logic.Square] = [row[column] for row in logic.current_squares]
+    column_squares: list[Logic.Square] = [row[column] for row in logic.squares]
     """A list of all the squares in the column."""
     column_string: str = "".join(str(square.player_id) for square in column_squares)
     """The column represented as a string, where each character represents the piece in the square, e.g. "2111100"."""
@@ -66,7 +66,7 @@ def detect_win_in_ascending_diagonal(logic: "Logic.Logic", row: int, column: int
 
     diagonal_length: int = min(Logic.BOARD_ROWS - row, Logic.BOARD_COLUMNS - column)
     """The length of the ascending diagonal. It increases as the diagonal starts closer to the bottom and left edges of the board."""
-    diagonal_squares: list[Logic.Square] = [logic.current_squares[row + i][column + i] for i in range(diagonal_length)]
+    diagonal_squares: list[Logic.Square] = [logic.squares[row + i][column + i] for i in range(diagonal_length)]
     """A list of all the squares in the ascending diagonal."""
     diagonal_string: str = "".join(str(square.player_id) for square in diagonal_squares)
     """The diagonal represented as a string, where each character represents the piece in the square, e.g. "122220"."""
@@ -97,7 +97,7 @@ def detect_win_in_descending_diagonal(logic: "Logic.Logic", row: int, column: in
     
     diagonal_length: int = min(row + 1, Logic.BOARD_COLUMNS - column)
     """The length of the descending diagonal. It increases as the diagonal starts closer to the top and left edges of the board."""
-    diagonal_squares: list[Logic.Square] = [logic.current_squares[row - i][column + i] for i in range(diagonal_length)]
+    diagonal_squares: list[Logic.Square] = [logic.squares[row - i][column + i] for i in range(diagonal_length)]
     """A list of all the squares in the descending diagonal."""
     diagonal_string: str = "".join(str(square.player_id) for square in diagonal_squares)
     """The diagonal represented as a string, where each character represents the piece in the square, e.g. "002222"."""

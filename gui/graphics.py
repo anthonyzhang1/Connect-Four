@@ -1,7 +1,6 @@
 """Handles the game's graphics using tkinter."""
 
 from logic.logic import BOARD_COLUMNS, BOARD_ROWS, Logic, Square
-import numpy
 import sys
 import tkinter, tkinter.font
 
@@ -57,20 +56,22 @@ class Graphics(tkinter.Tk):
         board_frame = tkinter.Frame(master=self)
         board_frame.pack()
 
-        for row, column in numpy.ndindex(BOARD_ROWS, BOARD_COLUMNS):
-            # Creates an empty button
-            button = tkinter.Button(
-                master=board_frame,
-                text="",
-                font=tkinter.font.Font(size=60),  # Affects the size of the button
-                width=3  # Affects the button's proportions
-            )
+        # Creates a button for each square in the grid
+        for row in range(BOARD_ROWS):
+            for column in range(BOARD_COLUMNS):
+                # Creates an empty button
+                button = tkinter.Button(
+                    master=board_frame,
+                    text="",
+                    font=tkinter.font.Font(size=60),  # Affects the size of the button
+                    width=3  # Affects the button's proportions
+                )
 
-            self._buttons[button] = (row, column)  # Assigns the button's coordinates
-            button.bind("<ButtonPress-1>", self.play)  # Left-clicking the button calls play()
-            
-            # Places the button into the grid going from bottom-to-top rather than top-to-bottom to match the game's internal model
-            button.grid(row=BOARD_ROWS - row - 1, column=column)
+                self._buttons[button] = (row, column)  # Assigns the button's coordinates
+                button.bind("<ButtonPress-1>", self.play)  # Left-clicking the button calls play()
+                
+                # Places the button into the grid going from bottom-to-top rather than top-to-bottom to match the game's internal model
+                button.grid(row=BOARD_ROWS - row - 1, column=column)
 
     def _get_actual_button(self, clicked_button: tkinter.Button) -> tkinter.Button | None:
         """Gets the actual button the piece was placed in, which is not necessarily the clicked one.

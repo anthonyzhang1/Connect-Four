@@ -69,7 +69,7 @@ class Graphics(tkinter.Tk):
             self._buttons[button] = (row, column)  # Assigns the button's coordinates
             button.bind("<ButtonPress-1>", self.play)  # Left-clicking the button calls play()
             
-            # Places the button into the grid going from bottom-to-top rather than top-to-bottom to fit the game's internal model
+            # Places the button into the grid going from bottom-to-top rather than top-to-bottom to match the game's internal model
             button.grid(row=BOARD_ROWS - row - 1, column=column)
 
     def _get_actual_button(self, clicked_button: tkinter.Button) -> tkinter.Button | None:
@@ -161,9 +161,3 @@ class Graphics(tkinter.Tk):
                 highlightthickness=0,  # Undoes a button's highlighting from a won game
                 text=""
             )
-
-def main() -> None:
-    """Launches the game."""
-    Graphics(Logic()).mainloop()
-
-if __name__ == "__main__": main()

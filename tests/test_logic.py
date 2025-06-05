@@ -1,4 +1,4 @@
-"""Contains pytest tests for the game's logic."""
+"""Tests the game's logic using pytest."""
 
 from logic.logic import BOARD_ROWS, Logic
 import pytest

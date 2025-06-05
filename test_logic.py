@@ -18,7 +18,7 @@ def test_fill_column_with_pieces(logic: Logic) -> None:
 
 def test_row_win_detection(logic: Logic) -> None:
     """Simulates a game where a player wins in a row."""
-    # Simulates a board with:
+    # Creates this board where Player 1 wins:
     # [2,2,2,0]
     # [1,1,1,1]
     logic.handle_move(0)  # Player 1's move in Row 0: [1,0,0,0]
@@ -33,7 +33,7 @@ def test_row_win_detection(logic: Logic) -> None:
 
 def test_column_win_detection(logic: Logic) -> None:
     """Simulates a game where a player wins in a column."""
-    # Simulates a board with:
+    # Creates this board where Player 1 wins:
     # [1,0]
     # [1,2]
     # [1,2]
@@ -50,7 +50,7 @@ def test_column_win_detection(logic: Logic) -> None:
 
 def test_ascending_diagonal_win_detection(logic: Logic) -> None:
     """Simulates a game where a player wins in an ascending diagonal."""
-    # Simulates a board with:
+    # Creates this board where Player 2 wins:
     # [0,0,0,2]
     # [0,0,2,1]
     # [0,2,1,1]
@@ -70,7 +70,7 @@ def test_ascending_diagonal_win_detection(logic: Logic) -> None:
 
 def test_descending_diagonal_win_detection(logic: Logic) -> None:
     """Simulates a game where a player wins in a descending diagonal."""
-    # Simulates a board with:
+    # Creates this board where Player 2 wins:
     # [2,0,0,0]
     # [1,2,0,0]
     # [1,1,2,0]

@@ -1,7 +1,7 @@
 """Handles the game's logic."""
 
 from itertools import cycle
-from win_detection import detect_win_in_ascending_diagonal, detect_win_in_descending_diagonal, detect_win_in_column, detect_win_in_row
+from .win_detection import detect_win_in_ascending_diagonal, detect_win_in_descending_diagonal, detect_win_in_column, detect_win_in_row
 
 BOARD_ROWS = 6
 """The number of rows in the board."""

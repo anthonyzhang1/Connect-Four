@@ -1,6 +1,6 @@
-"""Handles the win detection for a placed piece."""
+"""Handles the win detection for placed pieces."""
 
-import logic as Logic
+import logic.logic as Logic
 
 def detect_win_in_row(logic: "Logic.Logic", row: int) -> list[tuple[int, int]] | None:
     """Detects if there is a win in the row.

@@ -1,6 +1,6 @@
 """Contains pytest tests for the game's logic."""
 
-from logic import BOARD_ROWS, Logic
+from logic.logic import BOARD_ROWS, Logic
 import pytest
 
 @pytest.fixture(scope="function")

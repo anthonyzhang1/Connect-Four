@@ -1,9 +1,9 @@
 """Handles the game's graphics using tkinter."""
 
-from logic import BOARD_COLUMNS, BOARD_ROWS, Logic, Square
-from tkinter import font
+from logic.logic import BOARD_COLUMNS, BOARD_ROWS, Logic, Square
 import numpy
-import tkinter
+import sys
+import tkinter, tkinter.font
 
 class Graphics(tkinter.Tk):
     """The game's graphics, including its window, label, and board."""
@@ -33,7 +33,7 @@ class Graphics(tkinter.Tk):
         file_menu = tkinter.Menu(master=menu_bar, tearoff="off")  # The "File" option in the menu
         file_menu.add_command(label="New Game", command=self.reset_board)  # Adds an option to start a new game
         file_menu.add_separator()
-        file_menu.add_command(label="Quit", command=quit)  # Adds an option to quit the game
+        file_menu.add_command(label="Exit", command=sys.exit)  # Adds an option to exit the game
 
         menu_bar.add_cascade(label="File", menu=file_menu)  # Adds the "File" option to the menu bar
 
@@ -47,7 +47,7 @@ class Graphics(tkinter.Tk):
             master=display_frame,
             text=f"Player {self._logic.current_player.id} ({self._logic.current_player.colour}), make the first move!",
             fg=self._logic.current_player.colour,
-            font=font.Font(family="Arial", size=20, weight="bold")
+            font=tkinter.font.Font(family="Arial", size=20, weight="bold")
         )
 
         self.display.pack()
@@ -62,7 +62,7 @@ class Graphics(tkinter.Tk):
             button = tkinter.Button(
                 master=board_frame,
                 text="",
-                font=font.Font(size=60),  # Affects the size of the button
+                font=tkinter.font.Font(size=60),  # Affects the size of the button
                 width=3  # Affects the button's proportions
             )
 

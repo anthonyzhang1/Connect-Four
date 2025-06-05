@@ -58,7 +58,7 @@ class Graphics(tkinter.Tk):
         board_frame.pack()
 
         for row, column in numpy.ndindex(BOARD_ROWS, BOARD_COLUMNS):
-            # Creates empty buttons
+            # Creates an empty button
             button = tkinter.Button(
                 master=board_frame,
                 text="",
@@ -66,10 +66,11 @@ class Graphics(tkinter.Tk):
                 width=3  # Affects the button's proportions
             )
 
-            # Adjusts the button's row index to match the logic's row index, then assigns the button's coordinates
-            self._buttons[button] = (BOARD_ROWS - row - 1, column)
+            self._buttons[button] = (row, column)  # Assigns the button's coordinates
             button.bind("<ButtonPress-1>", self.play)  # Left-clicking the button calls play()
-            button.grid(row=row, column=column)  # Places the button into the board's grid
+            
+            # Places the button into the grid going from bottom-to-top rather than top-to-bottom to fit the game's internal model
+            button.grid(row=BOARD_ROWS - row - 1, column=column)
 
     def _get_actual_button(self, clicked_button: tkinter.Button) -> tkinter.Button | None:
         """Gets the actual button the piece was placed in, which is not necessarily the clicked one.

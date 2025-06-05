@@ -131,7 +131,7 @@ class Logic:
             The first empty square in the column, or `None` if the column is full.
         """
         column_squares: list[Square] = [row[column] for row in self.squares]
-        """All the squares in the column."""
+        """The squares in the column."""
 
         # Iterate though `column_squares` looking for the first empty square
         return next((square for square in column_squares if square.player_id == square.NO_ID), None)
@@ -184,20 +184,12 @@ class Logic:
 
         # Places the piece in `actual_square`
         self.squares[actual_square.row][actual_square.column].player_id = self.current_player.id
-        
-        # Check for wins in `actual_square`'s row
+
+        # Check for wins in `actual_square`'s row, column, and ascending and descending diagonals. Only the first win found is saved.
         winning_coordinates: list[tuple[int, int]] | None = detect_win_in_row(self, actual_square.row)
-
-        # If the game isn't won yet, check for wins in `actual_square`'s column
         if winning_coordinates is None: winning_coordinates = detect_win_in_column(self, actual_square.column)
-
-        # If the game isn't won yet, check for wins in `actual_square`'s ascending diagonal
-        if winning_coordinates is None:
-            winning_coordinates = detect_win_in_ascending_diagonal(self, actual_square.row, actual_square.column)
-
-        # If the game isn't won yet, check for wins in `actual_square`'s descending diagonal
-        if winning_coordinates is None:
-            winning_coordinates = detect_win_in_descending_diagonal(self, actual_square.row, actual_square.column)
+        if winning_coordinates is None: winning_coordinates = detect_win_in_ascending_diagonal(self, actual_square.row, actual_square.column)
+        if winning_coordinates is None: winning_coordinates = detect_win_in_descending_diagonal(self, actual_square.row, actual_square.column)
 
         if winning_coordinates is not None:  # If there is a win
             self.game_is_won = True

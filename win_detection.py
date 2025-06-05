@@ -10,14 +10,13 @@ def detect_win_in_row(logic: "Logic.Logic", row: int) -> list[tuple[int, int]] |
         row: The index of the row being checked.
     
     Returns:
-        If there is a win, returns a list of the winning coordinates, e.g. [(0, 0), (0, 1), (0, 2), (0, 3)].
-          Only the first 4 winning coordinates are returned.
-        If there is no win, returns `None`.
+        A list with the first 4 winning coordinates if there is a win, e.g. [(0, 0), (0, 1), (0, 2), (0, 3)].
+        `None` if there is no win.
     """
     row_squares: list[Logic.Square] = logic.squares[row]
-    """A list of all the squares in the row."""
+    """The squares in the row."""
     row_string: str = "".join(str(square.player_id) for square in row_squares)
-    """The row represented as a string, where each character represents the piece in the square, e.g. "0211112"."""
+    """The pieces in the row as a string, e.g. "1111220"."""
     win_start_column: int = row_string.find(logic.current_player.winning_combination)
     """The column the winning combination starts on, or -1 if there is no win."""
 
@@ -32,14 +31,13 @@ def detect_win_in_column(logic: "Logic.Logic", column: int) -> list[tuple[int, i
         column: The index of the column being checked.
 
     Returns:
-        If there is a win, returns a list of the winning coordinates, e.g. [(0, 0), (1, 0), (2, 0), (3, 0)].
-          Only the first 4 winning coordinates are returned.
-        If there is no win, returns `None`.
+        A list with the first 4 winning coordinates if there is a win, e.g. [(0, 0), (1, 0), (2, 0), (3, 0)].
+        `None` if there is no win.
     """
     column_squares: list[Logic.Square] = [row[column] for row in logic.squares]
-    """A list of all the squares in the column."""
+    """The squares in the column."""
     column_string: str = "".join(str(square.player_id) for square in column_squares)
-    """The column represented as a string, where each character represents the piece in the square, e.g. "2111100"."""
+    """The pieces in the column as a string, e.g. "211110"."""
     win_start_row: int = column_string.find(logic.current_player.winning_combination)
     """The row the winning combination starts on, or -1 if there is no win."""
 
@@ -55,9 +53,8 @@ def detect_win_in_ascending_diagonal(logic: "Logic.Logic", row: int, column: int
         column: The index of the column being checked.
 
     Returns:
-        If there is a win, returns a list of the winning coordinates, e.g. [(0, 0), (1, 1), (2, 2), (3, 3)].
-            Only the first 4 winning coordinates are returned.
-        If there is no win, returns `None`.
+        A list with the first 4 winning coordinates if there is a win, e.g. [(0, 0), (1, 1), (2, 2), (3, 3)].
+        `None` if there is no win.
     """
     # Gets the ascending diagonal's origin coordinates and assigns them to `row` and `column`
     while row and column > 0:
@@ -67,9 +64,9 @@ def detect_win_in_ascending_diagonal(logic: "Logic.Logic", row: int, column: int
     diagonal_length: int = min(Logic.BOARD_ROWS - row, Logic.BOARD_COLUMNS - column)
     """The length of the ascending diagonal. It increases as the diagonal starts closer to the bottom and left edges of the board."""
     diagonal_squares: list[Logic.Square] = [logic.squares[row + i][column + i] for i in range(diagonal_length)]
-    """A list of all the squares in the ascending diagonal."""
+    """The squares in the ascending diagonal."""
     diagonal_string: str = "".join(str(square.player_id) for square in diagonal_squares)
-    """The diagonal represented as a string, where each character represents the piece in the square, e.g. "122220"."""
+    """The pieces in the diagonal as a string, e.g. "122220"."""
     win_start_offset: int = diagonal_string.find(logic.current_player.winning_combination)
     """The offset from the diagonal's origin the winning combination starts on, or -1 if there is no win."""
 
@@ -86,9 +83,8 @@ def detect_win_in_descending_diagonal(logic: "Logic.Logic", row: int, column: in
         column: The index of the column being checked.
 
     Returns:
-        If there is a win, returns a list of the winning coordinates, e.g. [(3, 0), (2, 1), (1, 2), (0, 3)].
-            Only the first 4 winning coordinates are returned.
-        If there is no win, returns `None`.
+        A list with the first 4 winning coordinates if there is a win, e.g. [(3, 0), (2, 1), (1, 2), (0, 3)].
+        `None` if there is no win.
     """
     # Gets the descending diagonal's origin coordinates and assigns them to `row` and `column`
     while row < Logic.BOARD_ROWS - 1 and column > 0:
@@ -98,9 +94,9 @@ def detect_win_in_descending_diagonal(logic: "Logic.Logic", row: int, column: in
     diagonal_length: int = min(row + 1, Logic.BOARD_COLUMNS - column)
     """The length of the descending diagonal. It increases as the diagonal starts closer to the top and left edges of the board."""
     diagonal_squares: list[Logic.Square] = [logic.squares[row - i][column + i] for i in range(diagonal_length)]
-    """A list of all the squares in the descending diagonal."""
+    """The squares in the descending diagonal."""
     diagonal_string: str = "".join(str(square.player_id) for square in diagonal_squares)
-    """The diagonal represented as a string, where each character represents the piece in the square, e.g. "002222"."""
+    """The pieces in the diagonal as a string, e.g. "022221"."""
     win_start_offset: int = diagonal_string.find(logic.current_player.winning_combination)
     """The offset from the diagonal's origin the winning combination starts on, or -1 if there is no win."""
 
